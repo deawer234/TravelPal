@@ -43,4 +43,7 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+    <string name="add_travel_entry">Add new travel entry</string>
+    <string name="map_thumbnail">Tgumbnail of the map</string>
+    <string name="trip_thumbnail">Thumbnail of the trip</string>
 </resources>
