@@ -20,7 +20,7 @@
     </fragment>
     <fragment
         android:id="@+id/createTravelFragment"
-        android:name="com.example.travelpal.ui.CreateTravelFragment"
+        android:name="com.example.travelpal.ui.TravelCreateFragment"
         android:label="CreateTravelFragment" >
         <action
             android:id="@+id/action_createTravelFragment_to_travelListFragment"
