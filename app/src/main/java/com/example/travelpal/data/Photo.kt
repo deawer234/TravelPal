@@ -14,9 +14,9 @@ import kotlinx.parcelize.Parcelize
 )])
 @Parcelize
 data class Photo(
-    @PrimaryKey
-    val id: Long,
-    val travelEntryId: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val travelEntryId: Long,
     val uri: String,
     val description: String?,
     val dateTaken: Long

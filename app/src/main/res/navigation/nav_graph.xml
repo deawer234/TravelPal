@@ -3,26 +3,37 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/travelListFragment">
 
     <fragment
-        android:id="@+id/FirstFragment"
+        android:id="@+id/travelListFragment"
         android:name="com.example.travelpal.ui.TravelListFragment"
         android:label="@string/first_fragment_label"
         tools:layout="@layout/fragment_travel_list">
 
         <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
+            android:id="@+id/action_travelListFragment_to_createTravelFragment"
+            app:destination="@id/createTravelFragment" />
+        <action
+            android:id="@+id/action_travelListFragment_to_travelDetailFragment"
+            app:destination="@id/travelDetailFragment" />
     </fragment>
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.example.travelpal.TravelDetailFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
-
+        android:id="@+id/createTravelFragment"
+        android:name="com.example.travelpal.ui.CreateTravelFragment"
+        android:label="CreateTravelFragment" >
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            android:id="@+id/action_createTravelFragment_to_travelListFragment"
+            app:destination="@id/travelListFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/travelDetailFragment"
+        android:name="com.example.travelpal.ui.TravelDetailFragment"
+        android:label="fragment_travel_detail"
+        tools:layout="@layout/fragment_travel_detail" >
+        <argument
+            android:name="TravelEntity"
+            app:argType="com.example.travelpal.data.TravelEntity" />
+    </fragment>
+
 </navigation>
