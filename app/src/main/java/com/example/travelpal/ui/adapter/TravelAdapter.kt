@@ -2,6 +2,7 @@ package com.example.travelpal.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -10,10 +11,13 @@ import coil.transform.RoundedCornersTransformation
 import com.example.travelpal.R
 import com.example.travelpal.data.TravelEntity
 import com.example.travelpal.databinding.ItemTripBinding
+import com.example.travelpal.repository.PhotoRepository
+import com.example.travelpal.repository.TravelRepository
 
 class TravelAdapter(
     private val onClick: (TravelEntity) -> Unit
 ) : ListAdapter<TravelEntity, TravelViewHolder>(TravelDiffUtil()) {
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TravelViewHolder =
         TravelViewHolder(ItemTripBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
@@ -25,11 +29,12 @@ class TravelAdapter(
 
 }
 
+
 class TravelViewHolder( private val binding: ItemTripBinding
 ) : RecyclerView.ViewHolder(binding.root) {
-
     fun bind(item: TravelEntity, onClick: (TravelEntity) -> Unit) {
-        binding.ivTripThumbnail.load(item.photos.first()){
+
+        binding.ivTripThumbnail.load(item.coverUrl) {
             crossfade(true)
             placeholder(R.drawable.ic_launcher_background)
             transformations(RoundedCornersTransformation(16f))

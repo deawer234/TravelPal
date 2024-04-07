@@ -7,11 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.travelpal.R
 import com.example.travelpal.databinding.FragmentTravelListBinding
 import com.example.travelpal.repository.TravelRepository
 import com.example.travelpal.ui.adapter.TravelAdapter
+import com.google.android.material.snackbar.Snackbar
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -27,8 +30,7 @@ class TravelListFragment : Fragment() {
 
     private val adapter = TravelAdapter(
         onClick = { travel ->
-            Toast.makeText(context, "${travel.destinationName} ", Toast.LENGTH_LONG)
-                .show()
+            findNavController().navigate(TravelListFragmentDirections.actionTravelListFragmentToTravelDetailFragment(travel))
         }
     )
     override fun onCreateView(
@@ -45,10 +47,12 @@ class TravelListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.fabAddTravelEntry.setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
+            findNavController().navigate(TravelListFragmentDirections.actionTravelListFragmentToCreateTravelFragment())
         }
         binding.rvTravelEntries.layoutManager = LinearLayoutManager(requireContext());
         binding.rvTravelEntries.adapter = adapter
+
+        itemTouchHelper.attachToRecyclerView(binding.rvTravelEntries)
     }
 
     override fun onResume() {
@@ -56,4 +60,30 @@ class TravelListFragment : Fragment() {
 
         adapter.submitList(travelRepository.getAllTravels())
     }
+
+    val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+        override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+            // Drag and drop functionality is not needed here
+            return false
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            val position = viewHolder.adapterPosition
+            val item = adapter.currentList[position]
+
+            // Delete the item from the database
+            travelRepository.deleteTravel(item)
+
+            // Optionally, show an undo Snackbar
+            Snackbar.make(binding.rvTravelEntries, "Item deleted", Snackbar.LENGTH_LONG).setAction("UNDO") {
+                travelRepository.createTravel(item.destinationName, item.date, item.description) // Re-insert the item on undo
+                val updatedList = travelRepository.getAllTravels()
+                adapter.submitList(updatedList)
+            }.show()
+        }
+    }
+
+    // Attach it to the RecyclerView
+    val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
+
 }
