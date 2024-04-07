@@ -30,9 +30,9 @@
         android:id="@+id/travelDetailFragment"
         android:name="com.example.travelpal.ui.TravelDetailFragment"
         android:label="fragment_travel_detail"
-        tools:layout="@layout/fragment_travel_detail" >
+        tools:layout="@layout/fragment_travel_detail">
         <argument
-            android:name="TravelEntity"
+            android:name="travelEntity"
             app:argType="com.example.travelpal.data.TravelEntity" />
     </fragment>
 

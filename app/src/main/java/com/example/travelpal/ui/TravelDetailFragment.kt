@@ -7,8 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.travelpal.data.Photo
 import com.example.travelpal.databinding.FragmentTravelDetailBinding
+import com.example.travelpal.repository.PhotoRepository
 import com.example.travelpal.ui.adapter.PhotoAdapter
 
 /**
@@ -19,7 +19,9 @@ class TravelDetailFragment : Fragment() {
 
     private lateinit var binding: FragmentTravelDetailBinding
 
-
+    private val photoRepository: PhotoRepository by lazy {
+        PhotoRepository(requireContext())
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -33,19 +35,15 @@ class TravelDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val photos = listOf(
-            Photo(uri = "file:///android_asset/image1.jpg", description = "Image 1", travelEntryId =  args.TravelEntity.id, dateTaken = System.currentTimeMillis()),
-            Photo(uri = "file:///android_asset/image2.jpg", description = "Image 2", travelEntryId =  args.TravelEntity.id, dateTaken = System.currentTimeMillis())
-            // Add more photos
-        )
-
+        val photos = photoRepository.getAllPhotosForTravel(args.travelEntity.id)
         binding.photosRecyclerView.apply {
             layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
             adapter = PhotoAdapter(requireContext(), photos)
         }
 
-        binding.tvDescription.text = args.TravelEntity.description
-        binding.tvDestinationName.text = args.TravelEntity.destinationName
+
+        binding.tvDescription.text = args.travelEntity.description
+        binding.tvDestinationName.text = args.travelEntity.destinationName
         //binding.ivMapThumbnail.
     }
 

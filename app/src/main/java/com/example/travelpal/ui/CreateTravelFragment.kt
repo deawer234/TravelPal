@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.example.travelpal.data.TravelEntity
 import com.example.travelpal.databinding.FragmentTravelCreateBinding
 import com.example.travelpal.repository.TravelRepository
 

@@ -2,7 +2,6 @@ package com.example.travelpal.repository
 
 import android.content.Context
 import com.example.travelpal.data.Photo
-import com.example.travelpal.data.TravelEntity
 import com.example.travelpal.database.TravelDatabase
 import com.example.travelpal.database.PhotoDao
 

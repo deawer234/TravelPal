@@ -2,7 +2,6 @@ package com.example.travelpal.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -11,8 +10,6 @@ import coil.transform.RoundedCornersTransformation
 import com.example.travelpal.R
 import com.example.travelpal.data.TravelEntity
 import com.example.travelpal.databinding.ItemTripBinding
-import com.example.travelpal.repository.PhotoRepository
-import com.example.travelpal.repository.TravelRepository
 
 class TravelAdapter(
     private val onClick: (TravelEntity) -> Unit
