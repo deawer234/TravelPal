@@ -9,11 +9,10 @@ import kotlinx.parcelize.RawValue
 @Entity
 @Parcelize
 data class TravelEntity(
-    @PrimaryKey
-    val id: Long,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val coverUrl: String?,
     val destinationName: String,
     val date: String,
     val description: String,
-    val photos: @RawValue List<Photo>,
-    val locations: @RawValue List<Location>
 ) : Parcelable
