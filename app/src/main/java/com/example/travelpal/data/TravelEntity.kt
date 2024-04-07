@@ -1,10 +1,19 @@
 package com.example.travelpal.data
 
+import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
+
+@Entity
+@Parcelize
 data class TravelEntity(
-    val id: Int,
+    @PrimaryKey
+    val id: Long,
     val destinationName: String,
-    val date: Long,
+    val date: String,
     val description: String,
-    val photos: List<Photo>,
-    val locations: List<Location>
-)
+    val photos: @RawValue List<Photo>,
+    val locations: @RawValue List<Location>
+) : Parcelable

@@ -7,9 +7,9 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="com.example.travelpal.FirstFragment"
+        android:name="com.example.travelpal.ui.TravelListFragment"
         android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
+        tools:layout="@layout/fragment_travel_list">
 
         <action
             android:id="@+id/action_FirstFragment_to_SecondFragment"
@@ -17,7 +17,7 @@
     </fragment>
     <fragment
         android:id="@+id/SecondFragment"
-        android:name="com.example.travelpal.SecondFragment"
+        android:name="com.example.travelpal.TravelDetailFragment"
         android:label="@string/second_fragment_label"
         tools:layout="@layout/fragment_second">
 
