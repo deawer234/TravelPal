@@ -1,5 +1,8 @@
 package com.example.travelpal.ui
 
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -59,9 +62,10 @@ class TravelListFragment : Fragment() {
         adapter.submitList(travelRepository.getAllTravels())
     }
 
-    val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+    // Sliding delete magic
+
+    val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
         override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-            // Drag and drop functionality is not needed here
             return false
         }
 
@@ -69,15 +73,40 @@ class TravelListFragment : Fragment() {
             val position = viewHolder.adapterPosition
             val item = adapter.currentList[position]
 
-            // Delete the item from the database
-            travelRepository.deleteTravel(item)
+            val newList = adapter.currentList.toMutableList().apply { removeAt(position) }
+            adapter.submitList(newList)
 
-            // Optionally, show an undo Snackbar
-            Snackbar.make(binding.rvTravelEntries, "Item deleted", Snackbar.LENGTH_LONG).setAction("UNDO") {
-                travelRepository.createTravel(item.destinationName, item.date, item.description) // Re-insert the item on undo
-                val updatedList = travelRepository.getAllTravels()
-                adapter.submitList(updatedList)
-            }.show()
+            // Show the Snackbar with the UNDO option
+            Snackbar.make(binding.rvTravelEntries, "Item deleted", Snackbar.LENGTH_LONG).apply {
+                setAction("UNDO") {
+                    newList.add(position, item)
+                    adapter.submitList(newList.toList())
+                    adapter.notifyItemInserted(position)
+                }
+                addCallback(object : Snackbar.Callback() {
+                    override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                        if (event != DISMISS_EVENT_ACTION) {
+                            travelRepository.deleteTravel(item)
+                        }
+                    }
+                })
+                show()
+            }
+        }
+
+        override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
+            if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                val itemView = viewHolder.itemView
+                val paint = Paint()
+
+                if (dX < 0) {
+                    // Swiping to the left
+                    paint.color = Color.RED // Change to your desired color
+                    c.drawRect(itemView.left.toFloat() + dX, itemView.top.toFloat(), itemView.right.toFloat(), itemView.bottom.toFloat(), paint)
+                }
+
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+            }
         }
     }
 
