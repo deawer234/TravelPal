@@ -14,4 +14,5 @@ data class TravelEntity(
     val destinationName: String,
     val date: String,
     val description: String,
+    //val liveTrackingOn: Boolean
 ) : Parcelable

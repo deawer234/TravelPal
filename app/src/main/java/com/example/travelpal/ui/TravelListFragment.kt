@@ -1,5 +1,6 @@
 package com.example.travelpal.ui
 
+import android.content.pm.PackageManager
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -8,6 +9,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,15 +18,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.travelpal.databinding.FragmentTravelListBinding
 import com.example.travelpal.repository.TravelRepository
 import com.example.travelpal.ui.adapter.TravelAdapter
+import com.example.travelpal.ui.manager.LiveTrackingManager
 import com.google.android.material.snackbar.Snackbar
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
 class TravelListFragment : Fragment() {
+    companion object {
+        private const val REQUEST_CODE = 1
+    }
 
     private lateinit var binding: FragmentTravelListBinding
-
 
     private val travelRepository: TravelRepository by lazy {
         TravelRepository(requireContext())
@@ -48,7 +54,7 @@ class TravelListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.fabAddTravelEntry.setOnClickListener {
-            findNavController().navigate(TravelListFragmentDirections.actionTravelListFragmentToCreateTravelFragment())
+            showTrackingOptionsDialog()
         }
         binding.rvTravelEntries.layoutManager = LinearLayoutManager(requireContext());
         binding.rvTravelEntries.adapter = adapter
@@ -100,8 +106,7 @@ class TravelListFragment : Fragment() {
                 val paint = Paint()
 
                 if (dX < 0) {
-                    // Swiping to the left
-                    paint.color = Color.RED // Change to your desired color
+                    paint.color = Color.RED
                     c.drawRect(itemView.left.toFloat() + dX, itemView.top.toFloat(), itemView.right.toFloat(), itemView.bottom.toFloat(), paint)
                 }
 
@@ -109,8 +114,40 @@ class TravelListFragment : Fragment() {
             }
         }
     }
-
-    // Attach it to the RecyclerView
     val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
+
+    private fun showTrackingOptionsDialog() {
+        val options = arrayOf("Insert from previous travel", "Start live tracking")
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("Choose an option")
+        builder.setItems(options) { dialog, which ->
+            when (which) {
+                0 -> findNavController().navigate(TravelListFragmentDirections.actionTravelListFragmentToCreateTravelFragment())
+                1 -> {
+                    println("Test")
+                    getTrackingPermissions()
+                    if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                            requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+                        findNavController().navigate(TravelListFragmentDirections.actionTravelListFragmentToTravelLivetrackingFragment())
+                    }
+                }
+
+            }
+        }
+        val dialog = builder.create()
+        dialog.show()
+    }
+
+    private fun getTrackingPermissions(){
+        if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(), arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION),
+                Companion.REQUEST_CODE
+            )
+            return
+        }
+    }
+
+
 
 }

@@ -25,5 +25,5 @@ data class Location(
     val latitude: Double,
     val longitude: Double,
     val name: String?,
-    val visitDate: Long
+    val visitDate: String
 ) : Parcelable

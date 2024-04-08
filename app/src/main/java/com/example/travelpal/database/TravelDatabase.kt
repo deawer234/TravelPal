@@ -10,7 +10,7 @@ import com.example.travelpal.data.TravelEntity
 
 @Database(
     entities = [TravelEntity::class, Photo::class, Location::class],
-    version = 2
+    version = 3
 )
 abstract class TravelDatabase : RoomDatabase() {
     companion object {
@@ -26,4 +26,6 @@ abstract class TravelDatabase : RoomDatabase() {
     abstract fun travelEntityDao(): TravelEntityDao
 
     abstract fun photoDao(): PhotoDao
+
+    abstract fun locationDao(): LocationDao
 }

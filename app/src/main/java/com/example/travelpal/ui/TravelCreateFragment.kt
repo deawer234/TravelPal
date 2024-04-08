@@ -9,6 +9,10 @@ import androidx.navigation.fragment.findNavController
 import com.example.travelpal.data.TravelEntity
 import com.example.travelpal.databinding.FragmentTravelCreateBinding
 import com.example.travelpal.repository.TravelRepository
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
 
 class TravelCreateFragment : Fragment(){
     private lateinit var binding: FragmentTravelCreateBinding
@@ -52,4 +56,5 @@ class TravelCreateFragment : Fragment(){
             // Show an error message indicating that all fields are required
         }
     }
+
 }

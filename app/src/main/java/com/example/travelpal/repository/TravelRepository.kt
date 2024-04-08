@@ -9,8 +9,8 @@ class TravelRepository (
     context: Context,
     private val travelEntityDao: TravelEntityDao = TravelDatabase.create(context).travelEntityDao()
 ) {
-    fun createTravel(travelEntity: TravelEntity){
-        travelEntityDao.persistTravelData(travelEntity)
+    fun createTravel(travelEntity: TravelEntity): Long{
+        return travelEntityDao.persistTravelData(travelEntity)
     }
 
     fun deleteTravel(travelEntity: TravelEntity){

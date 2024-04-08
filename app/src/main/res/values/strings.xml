@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TravelPal</string>
+    <string name="app_name">Travel Pal</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
@@ -50,4 +50,11 @@
     <string name="destination_name">Destination name\n</string>
     <string name="description">Description</string>
     <string name="save">Save\n</string>
+    <string name="profile">\n</string>
+    <string name="home" />
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="toolbar_title" />
+    <string name="done" />
+    <string name="cancel" />
 </resources>
