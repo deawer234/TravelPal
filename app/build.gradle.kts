@@ -51,6 +51,7 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     implementation("io.coil-kt:coil:2.5.0")
     implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.maps.android:android-maps-utils:2.2.5")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
