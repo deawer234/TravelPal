@@ -6,8 +6,6 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 
-
-
 @Entity(foreignKeys = [ForeignKey(
     entity = TravelEntity::class,
     parentColumns = arrayOf("id"),
