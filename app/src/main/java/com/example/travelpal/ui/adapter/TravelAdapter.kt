@@ -14,6 +14,7 @@ import com.example.travelpal.databinding.ItemTripBinding
 class TravelAdapter(
     private val onClick: (TravelEntity) -> Unit
 ) : ListAdapter<TravelEntity, TravelViewHolder>(TravelDiffUtil()) {
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TravelViewHolder =
         TravelViewHolder(ItemTripBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
@@ -25,11 +26,12 @@ class TravelAdapter(
 
 }
 
+
 class TravelViewHolder( private val binding: ItemTripBinding
 ) : RecyclerView.ViewHolder(binding.root) {
-
     fun bind(item: TravelEntity, onClick: (TravelEntity) -> Unit) {
-        binding.ivTripThumbnail.load(item.photos.first()){
+
+        binding.ivTripThumbnail.load(item.coverUrl) {
             crossfade(true)
             placeholder(R.drawable.ic_launcher_background)
             transformations(RoundedCornersTransformation(16f))
