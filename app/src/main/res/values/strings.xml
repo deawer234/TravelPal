@@ -46,4 +46,8 @@
     <string name="add_travel_entry">Add new travel entry</string>
     <string name="map_thumbnail">Tgumbnail of the map</string>
     <string name="trip_thumbnail">Thumbnail of the trip</string>
+    <string name="date">Date in format DD-MM-YYYY</string>
+    <string name="destination_name">Destination name\n</string>
+    <string name="description">Description</string>
+    <string name="save">Save\n</string>
 </resources>
