@@ -58,4 +58,8 @@
     <string name="done" />
     <string name="cancel" />
     <string name="start_live_tracking">Start live tracking</string>
+    <string name="elevation">Elevation:</string>
+    <string name="steps">Steps:</string>
+    <string name="distance">Distance:</string>
+    <string name="speed">Speed:</string>
 </resources>

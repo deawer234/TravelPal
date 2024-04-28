@@ -35,6 +35,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.CameraActivity" />
+        <receiver android:name=".ui.manager.NotificationReceiver" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAXrHrgh7wGnXQ1xWoZ6wtyQfaOFegTtdo"/>

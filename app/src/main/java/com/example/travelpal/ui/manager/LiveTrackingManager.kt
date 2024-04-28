@@ -7,6 +7,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.location.Location
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -14,7 +19,6 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContentProviderCompat.requireContext
-import com.example.travelpal.data.Location
 import com.example.travelpal.data.TravelEntity
 import com.example.travelpal.repository.LocationRepository
 import com.example.travelpal.repository.TravelRepository
@@ -31,16 +35,22 @@ import androidx.core.app.NotificationCompat
 import com.example.travelpal.MainActivity
 import com.example.travelpal.R
 
-class LiveTrackingManager(private val context: Context)  {
+
+class LiveTrackingManager(private val context: Context, private val travelEntity: TravelEntity)  {
     private var fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
     private lateinit var locationCallback: LocationCallback
     private var locationRequest: LocationRequest? = null
+
+    private var lastLocation: Location? = null
+    private var totalDistance = 0f
+    private var startTime = 0L
+    private var totalTime = 0L
 
     private val handler = Handler(Looper.getMainLooper())
     private val runnable = object : Runnable {
         override fun run() {
             sendNotification()
-            val randomDelay = (5..15).random() * 1000L // random delay between 5 and 15 seconds
+            val randomDelay = (5..15).random() * 10000L // random delay between 50 and 150 seconds
             handler.postDelayed(this, randomDelay)
         }
     }
@@ -63,13 +73,43 @@ class LiveTrackingManager(private val context: Context)  {
     }
 
     @SuppressLint("MissingPermission")
+    private fun sendNotification() {
+        val notificationManager = NotificationManagerCompat.from(context)
+
+        val intent = Intent(context, NotificationReceiver::class.java)
+        intent.putExtra("travelEntityId", travelEntity.id)
+
+        val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_background)
+            .setContentTitle("Take a picture")
+            .setContentText("Please take a picture for your journey.")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(NOTIFICATION_ID, notification)
+    }
+    @SuppressLint("MissingPermission")
     fun startLocationUpdates(travelEntityId: Long) {
+        startTime = System.currentTimeMillis()
         createLocationRequest()
+
         locationCallback = object : LocationCallback() {
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult ?: return
                 for (location in locationResult.locations) {
+
+                    lastLocation?.let {
+                        totalDistance += it.distanceTo(location)
+                    }
+                    lastLocation = location
+
+                    totalTime = System.currentTimeMillis() - startTime
+
                     saveLocationPoint(location, travelEntityId)
                 }
             }
@@ -89,9 +129,10 @@ class LiveTrackingManager(private val context: Context)  {
         handler.removeCallbacks(runnable)
     }
 
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun saveLocationPoint(location: android.location.Location, travelEntityId: Long) {
-        val newLocation = Location(
+        val newLocation = com.example.travelpal.data.Location(
             travelEntryId = travelEntityId,
             latitude = location.latitude,
             longitude = location.longitude,
@@ -102,37 +143,19 @@ class LiveTrackingManager(private val context: Context)  {
         println(newLocation)
     }
 
-
-//    val locationUpdateReceiver = object : BroadcastReceiver() {
-//        override fun onReceive(context: Context, intent: Intent) {
-//            val location = intent.getParcelableExtra<Location>("location")
-//            // Do something with the new location.
-//        }
-//    }
-//
-//    LocalBroadcastManager.getInstance(context).registerReceiver(
-//    locationUpdateReceiver,
-//    IntentFilter("LocationUpdated")
-//    )
-
-    private fun sendNotification() {
-        val notificationManager = NotificationManagerCompat.from(context)
-
-        val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        val pendingIntent = PendingIntent.getActivity(context, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE)
-
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_background)
-            .setContentTitle("Take a picture")
-            .setContentText("Please take a picture for your journey.")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .build()
-
-//        notificationManager.notify(NOTIFICATION_ID, notification)
+    fun getTotalDistance(): Float {
+        return totalDistance
     }
+
+    fun getAverageSpeed(): Float {
+        return lastLocation?.speed ?: 0f
+    }
+    fun getLastAltitude(): Double {
+        return lastLocation?.altitude ?: 0.0
+    }
+
+    fun getLastLocation(): Location? {
+        return lastLocation
+    }
+
 }
