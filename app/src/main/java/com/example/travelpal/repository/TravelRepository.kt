@@ -18,4 +18,7 @@ class TravelRepository (
     }
     fun getAllTravels(): List<TravelEntity> =
         travelEntityDao.selectAllRoutes()
+
+    fun getTravelById(id: Long): TravelEntity =
+        travelEntityDao.selectRouteById(id)
 }

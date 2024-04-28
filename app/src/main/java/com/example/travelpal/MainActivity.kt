@@ -1,17 +1,24 @@
 package com.example.travelpal
 
+import android.os.Build
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import com.example.travelpal.databinding.ActivityMainBinding
 import androidx.navigation.ui.setupWithNavController
+import com.example.travelpal.ui.TravelCreateFragment
+import com.example.travelpal.ui.TravelListFragment
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -23,7 +30,6 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
         val appBarConfiguration = AppBarConfiguration(navController.graph)
 
-        // Setup the Toolbar with NavController and AppBarConfiguration
         binding.toolbar.setupWithNavController(navController, appBarConfiguration)
     }
     override fun onSupportNavigateUp(): Boolean {

@@ -1,33 +1,37 @@
 package com.example.travelpal.ui
 
+import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.travelpal.R
 import com.example.travelpal.databinding.FragmentTravelListBinding
 import com.example.travelpal.repository.TravelRepository
 import com.example.travelpal.ui.adapter.TravelAdapter
 import com.example.travelpal.ui.manager.LiveTrackingManager
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
 class TravelListFragment : Fragment() {
-    companion object {
-        private const val REQUEST_CODE = 1
-    }
 
     private lateinit var binding: FragmentTravelListBinding
 
@@ -50,16 +54,20 @@ class TravelListFragment : Fragment() {
 
     }
 
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.fabAddTravelEntry.setOnClickListener {
-            showTrackingOptionsDialog()
-        }
         binding.rvTravelEntries.layoutManager = LinearLayoutManager(requireContext());
         binding.rvTravelEntries.adapter = adapter
 
+        binding.fabAddTravelEntry.setOnClickListener {
+            findNavController().navigate(TravelListFragmentDirections.actionTravelListFragmentToCreateTravelFragment())
+        }
+
         itemTouchHelper.attachToRecyclerView(binding.rvTravelEntries)
+
     }
 
     override fun onResume() {
@@ -70,7 +78,7 @@ class TravelListFragment : Fragment() {
 
     // Sliding delete magic
 
-    val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+    private val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
         override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
             return false
         }
@@ -114,40 +122,7 @@ class TravelListFragment : Fragment() {
             }
         }
     }
-    val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
 
-    private fun showTrackingOptionsDialog() {
-        val options = arrayOf("Insert from previous travel", "Start live tracking")
-        val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle("Choose an option")
-        builder.setItems(options) { dialog, which ->
-            when (which) {
-                0 -> findNavController().navigate(TravelListFragmentDirections.actionTravelListFragmentToCreateTravelFragment())
-                1 -> {
-                    println("Test")
-                    getTrackingPermissions()
-                    if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                            requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-                        findNavController().navigate(TravelListFragmentDirections.actionTravelListFragmentToTravelLivetrackingFragment())
-                    }
-                }
-
-            }
-        }
-        val dialog = builder.create()
-        dialog.show()
-    }
-
-    private fun getTrackingPermissions(){
-        if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION),
-                Companion.REQUEST_CODE
-            )
-            return
-        }
-    }
-
-
+    private val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
 
 }

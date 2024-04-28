@@ -57,4 +57,5 @@
     <string name="toolbar_title" />
     <string name="done" />
     <string name="cancel" />
+    <string name="start_live_tracking">Start live tracking</string>
 </resources>

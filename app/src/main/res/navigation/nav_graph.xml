@@ -18,16 +18,16 @@
             android:id="@+id/action_travelListFragment_to_travelDetailFragment"
             app:destination="@id/travelDetailFragment" />
         <action
-            android:id="@+id/action_travelListFragment_to_travelLivetrackingFragment"
-            app:destination="@id/travelLivetrackingFragment" />
+            android:id="@+id/action_travelListFragment_to_createTravelFragment2"
+            app:destination="@id/createTravelFragment" />
     </fragment>
     <fragment
         android:id="@+id/createTravelFragment"
         android:name="com.example.travelpal.ui.TravelCreateFragment"
         android:label="Add travel route" >
         <action
-            android:id="@+id/action_createTravelFragment_to_travelListFragment"
-            app:destination="@id/travelListFragment" />
+            android:id="@+id/action_createTravelFragment_to_travelLivetrackingFragment"
+            app:destination="@id/travelLivetrackingFragment" />
     </fragment>
     <fragment
         android:id="@+id/travelDetailFragment"
@@ -45,6 +45,12 @@
         <action
             android:id="@+id/action_travelLivetrackingFragment_to_travelListFragment"
             app:destination="@id/travelListFragment" />
+        <argument
+            android:name="travelEntity"
+            app:argType="com.example.travelpal.data.TravelEntity" />
+        <action
+            android:id="@+id/action_travelLivetrackingFragment_to_createTravelFragment"
+            app:destination="@id/createTravelFragment" />
     </fragment>
 
 

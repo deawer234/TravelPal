@@ -13,6 +13,6 @@ class LocationRepository  (
         locationDao.persistLocationData(location)
     }
 
-    fun getAllTravels(travelEntryId: Long): List<Location> =
+    fun getAllTravelLocations(travelEntryId: Long): List<Location> =
         locationDao.getLocationsForTravelEntry(travelEntryId)
 }

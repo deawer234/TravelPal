@@ -30,7 +30,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <ImageView
+        <com.google.android.gms.maps.MapView
             android:id="@+id/ivMapThumbnail"
             android:layout_width="0dp"
             android:layout_height="200dp"

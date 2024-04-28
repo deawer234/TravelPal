@@ -18,4 +18,7 @@ interface TravelEntityDao {
 
     @Query("SELECT * FROM TravelEntity")
     fun selectAllRoutes(): List<TravelEntity>
+
+    @Query("SELECT * FROM TravelEntity WHERE id = :id")
+    fun selectRouteById(id: Long): TravelEntity
 }
