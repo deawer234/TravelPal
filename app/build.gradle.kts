@@ -63,6 +63,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.maps.android:android-maps-utils:2.2.5")
     implementation("androidx.camera:camera-core:1.3.3")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
 
     // TESTS

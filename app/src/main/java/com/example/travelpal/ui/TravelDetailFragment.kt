@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.travelpal.databinding.FragmentTravelDetailBinding
@@ -20,11 +19,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -33,8 +27,6 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
     private val args: TravelDetailFragmentArgs by navArgs()
 
     private lateinit var binding: FragmentTravelDetailBinding
-
-    private var mapJob: Job? = null
 
     private val photoRepository: PhotoRepository by lazy {
         PhotoRepository(requireContext())

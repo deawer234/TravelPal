@@ -10,10 +10,11 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
 
     <application
+        android:name=".TravelApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
@@ -24,6 +25,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TravelPal"
         tools:targetApi="31">
+        <service
+            android:name=".ui.service.TrackerService"
+            android:foregroundServiceType="location"
+            android:exported="false"
+            android:enabled="true"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -34,9 +40,10 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+
         </activity>
         <activity android:name=".ui.CameraActivity" />
-        <receiver android:name=".ui.manager.NotificationReceiver" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAXrHrgh7wGnXQ1xWoZ6wtyQfaOFegTtdo"/>

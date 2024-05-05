@@ -1,12 +1,13 @@
 package com.example.travelpal.ui
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.ActivityResultLauncher
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -15,8 +16,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.travelpal.data.TravelEntity
 import com.example.travelpal.databinding.FragmentTravelCreateBinding
 import com.example.travelpal.repository.TravelRepository
-import com.example.travelpal.ui.manager.PermissionsManager
-import com.google.android.material.snackbar.Snackbar
+import com.example.travelpal.ui.service.TrackerService
 
 
 class TravelCreateFragment : Fragment(){
@@ -24,6 +24,21 @@ class TravelCreateFragment : Fragment(){
 
     private val travelRepository: TravelRepository by lazy {
         TravelRepository(requireContext())
+    }
+
+    private val locationPermissionRequest = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        when {
+            permissions.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                // Precise location access granted.
+            }
+            permissions.getOrDefault(android.Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                // Only approximate location access granted.
+            } else -> {
+            // No location access granted.
+        }
+        }
     }
 
     override fun onCreateView(
@@ -68,17 +83,51 @@ class TravelCreateFragment : Fragment(){
 //        }
 //    }
 
+    val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            saveTravelEntity()
+        }
+        else {
+            Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+
+        //permissionsManager.checkAndRequestPermissions()
+//        if(ContextCompat.checkSelfPermission(requireActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
+//            == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION)
+//            == PackageManager.PERMISSION_GRANTED) {
+//
+//        }
+
         binding.btnSave.setOnClickListener {
-//            val perms = arrayOf(
-//                Manifest.permission.CAMERA,
-//                Manifest.permission.ACCESS_COARSE_LOCATION,
-//                Manifest.permission.ACCESS_FINE_LOCATION,
-//                Manifest.permission.POST_NOTIFICATIONS
-//            )
-//            activityResultLauncher.launch(perms)
-            saveTravelEntity()
+            when {
+                ContextCompat.checkSelfPermission(
+                    requireActivity(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+                        && ContextCompat.checkSelfPermission(
+                    requireActivity(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+                -> {
+                    saveTravelEntity()
+                }
+                ActivityCompat.shouldShowRequestPermissionRationale(
+                    requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
+                        && ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) -> {
+                    Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    permissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+                }
+            }
         }
     }
 
@@ -98,6 +147,15 @@ class TravelCreateFragment : Fragment(){
             )
             val id = travelRepository.createTravel(travelEntity)
             val travelEntityCreated = travelRepository.getTravelById(id)
+
+            println("BEFORE TRACKING")
+            Intent(requireActivity().applicationContext, TrackerService::class.java).apply {
+                action = TrackerService.ACTION_START
+                putExtra("travelEntityId", id)
+                requireActivity().startService(this)
+            }
+            println("STARTED TRACKING")
+
             findNavController().navigate(TravelCreateFragmentDirections.actionCreateTravelFragmentToTravelLivetrackingFragment(travelEntityCreated))
             // Navigate back or show a success message
         } else {
