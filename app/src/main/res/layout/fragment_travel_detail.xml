@@ -50,6 +50,26 @@
             app:layout_constraintRight_toRightOf="parent"
             />
 
+        <TextView
+            android:id="@+id/steps"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:layout_constraintTop_toBottomOf="@id/averageSpeed"
+            app:layout_constraintRight_toLeftOf="@id/totalTime"
+            app:layout_constraintLeft_toLeftOf ="parent"
+            />
+
+        <TextView
+            android:id="@+id/totalTime"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:layout_constraintTop_toBottomOf="@id/distanceTraveled"
+            app:layout_constraintLeft_toRightOf="@id/steps"
+            app:layout_constraintRight_toRightOf="parent"
+            />
+
         <com.google.android.gms.maps.MapView
             android:id="@+id/ivMapThumbnail"
             android:layout_width="0dp"
@@ -63,9 +83,9 @@
         <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/elevationChart"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="150dp"
             android:layout_margin="16dp"
-            app:layout_constraintTop_toBottomOf="@id/averageSpeed"
+            app:layout_constraintTop_toBottomOf="@id/steps"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

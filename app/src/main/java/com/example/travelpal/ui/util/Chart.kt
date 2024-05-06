@@ -92,6 +92,7 @@ class Chart{
         }
 
         chart.legend.isEnabled = false  // Disable the legend
+
     }
 
 }

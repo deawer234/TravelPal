@@ -93,7 +93,7 @@ class TrackerService : Service() {
                 .setOnlyAlertOnce(true)
         }
 
-        schedulePhotoReminder()
+//        schedulePhotoReminder()
 
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
@@ -140,14 +140,14 @@ class TrackerService : Service() {
         serviceScope.cancel()
     }
 
-    private fun schedulePhotoReminder() {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, PhotoNotificationReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-
-        val randomTime = Random.nextLong(1, 3) * 60 * 1000  // Random time between 1 and 60 minutes
-        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + randomTime, pendingIntent)
-    }
+//    private fun schedulePhotoReminder() {
+//        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+//        val intent = Intent(this, PhotoNotificationReceiver::class.java)
+//        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+//
+//        val randomTime = Random.nextLong(1, 3) * 60 * 1000  // Random time between 1 and 60 minutes
+//        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + randomTime, pendingIntent)
+//    }
 
     private fun saveLocationPoint(location: Location, travelEntityId: Long) {
         val newLocation = com.example.travelpal.data.Location(

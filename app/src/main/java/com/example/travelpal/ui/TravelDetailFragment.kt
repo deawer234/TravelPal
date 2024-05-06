@@ -73,10 +73,24 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         binding.tvDescription.text = args.travelEntity.description
         binding.tvDestinationName.text = args.travelEntity.destinationName
 
+        var average = 0f
+        locations.forEach {
+            average += it.speed
+        }
+        average /= locations.size
 
+        val averageSpeedText = "Average speed: %.2f km/h".format(average*3.6)
+        val distanceTraveledText = "Distance traveled: %.2f km".format(locations.last().traveled/1000)
+        binding.averageSpeed.text = averageSpeedText
+        binding.distanceTraveled.text = distanceTraveledText
+
+        binding.steps.text = "Steps: ${locations.last().steps}"
+
+        val totalTime = (locations.last().visitDate.toLong() - locations.first().visitDate.toLong())/1000
+        binding.totalTime.text = "Total time: ${totalTime}"
         val chart = Chart()
         lifecycleScope.launch {
-            chart.getTraveledChartData(binding.elevationChart, locations)
+            chart.getElevationChartData(binding.elevationChart, locations)
         }
     }
 
