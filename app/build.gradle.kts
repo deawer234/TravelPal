@@ -46,7 +46,11 @@ android {
         viewBinding = true
         compose = true
     }
+
+
 }
+
+
 
 dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
@@ -102,5 +106,7 @@ dependencies {
     implementation("androidx.camera:camera-camera2:$camerax_version")
     implementation("androidx.camera:camera-lifecycle:$camerax_version")
     implementation("androidx.camera:camera-view:1.0.0-alpha27")
+
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
 }

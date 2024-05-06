@@ -17,6 +17,9 @@ class TravelApp: Application(){
 
             val notificationManager: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
-        }
+
+            val channelCamera = NotificationChannel("camera", "Camera", NotificationManager.IMPORTANCE_DEFAULT)
+
+            notificationManager.createNotificationChannel(channelCamera)}
     }
 }
