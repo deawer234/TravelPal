@@ -93,7 +93,7 @@ class TrackerService : Service() {
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
         locationClient
-            .getLocationUpdates(10000L)
+            .getLocationUpdates(5000L)
             .catch { e -> e.printStackTrace() }
             .onEach {
                 it.entries.lastOrNull()?.let { entry ->

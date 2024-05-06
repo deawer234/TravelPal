@@ -11,7 +11,7 @@ import com.example.travelpal.data.TravelEntity
 
 @Database(
     entities = [TravelEntity::class, Photo::class, Location::class],
-    version = 7
+    version = 8
 )
 abstract class TravelDatabase : RoomDatabase() {
     companion object {

@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.travelpal.data.Location
 import com.example.travelpal.databinding.FragmentTravelDetailBinding
 import com.example.travelpal.repository.LocationRepository
 import com.example.travelpal.repository.PhotoRepository
@@ -27,6 +28,8 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
     private val args: TravelDetailFragmentArgs by navArgs()
 
     private lateinit var binding: FragmentTravelDetailBinding
+
+    private lateinit var locations: List<Location>
 
     private val photoRepository: PhotoRepository by lazy {
         PhotoRepository(requireContext())
@@ -59,11 +62,27 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
 
         binding.tvDescription.text = args.travelEntity.description
         binding.tvDestinationName.text = args.travelEntity.destinationName
+
+        locations = locationRepository.getAllTravelLocations(args.travelEntity.id)
+        val elevationData = locations.map { it.traveled }
+
+//        // Create a series using elevation data
+//        val series: XYSeries = SimpleXYSeries(
+//            elevationData,
+//            SimpleXYSeries.ArrayFormat.Y_VALS_ONLY,
+//            "Elevation"
+//        )
+//
+//        // Create a formatter to use for drawing a series using LineAndPointRenderer:
+//        val seriesFormat = LineAndPointFormatter(Color.RED, Color.GREEN, null, null)
+//
+//        // Add series to the plot:
+//        val plot: XYPlot = binding.elevationChart
+//        plot.addSeries(series, seriesFormat)
     }
 
 
     override fun onMapReady(googleMap: GoogleMap) {
-        val locations = locationRepository.getAllTravelLocations(args.travelEntity.id)
         val latLngList: List<LatLng> = locations.map { location ->
             LatLng(location.latitude, location.longitude)
         }
