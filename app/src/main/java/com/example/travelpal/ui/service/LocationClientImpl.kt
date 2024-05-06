@@ -1,9 +1,7 @@
 package com.example.travelpal.ui.service
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -11,7 +9,6 @@ import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Looper
-import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -26,7 +23,7 @@ import kotlinx.coroutines.launch
 class LocationClientImpl(
     private val context: Context,
     private val client: FusedLocationProviderClient
-    ): LocationClient {
+) : LocationClient {
 
     private lateinit var sensorManager: SensorManager
     private var stepDetectorSensor: Sensor? = null
@@ -37,26 +34,28 @@ class LocationClientImpl(
     @SuppressLint("MissingPermission")
     override fun getLocationUpdates(interval: Long): Flow<Map<Location, Int>> {
         return callbackFlow {
-            if(!context.hasLocationPermission()){
+            if (!context.hasLocationPermission()) {
                 throw LocationClient.LocationException("Location permission not granted")
             }
 
-            val locationManager: LocationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val locationManager: LocationManager =
+                context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
             val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-            val isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+            val isNetworkEnabled =
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
             if (!isGpsEnabled && !isNetworkEnabled) {
                 throw LocationClient.LocationException("GPS is disabled")
             }
 
             val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
                 .setWaitForAccurateLocation(true)
-                .setMinUpdateIntervalMillis(interval - interval/2)
-                .setMaxUpdateDelayMillis(interval + interval/2)
+                .setMinUpdateIntervalMillis(interval - interval / 2)
+                .setMaxUpdateDelayMillis(interval + interval / 2)
                 .build()
 
             startStepCounter()
 
-           val locationCallback = object : LocationCallback() {
+            val locationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
                     super.onLocationResult(locationResult)
                     locationResult.locations.lastOrNull()?.let {
@@ -78,6 +77,7 @@ class LocationClientImpl(
             }
         }
     }
+
     private fun startStepCounter() {
         sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepDetectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
@@ -95,7 +95,11 @@ class LocationClientImpl(
                 }
             }
         }
-        sensorManager.registerListener(sensorEventListener, stepDetectorSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(
+            sensorEventListener,
+            stepDetectorSensor,
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
     }
 
     private fun stopStepCounter() {

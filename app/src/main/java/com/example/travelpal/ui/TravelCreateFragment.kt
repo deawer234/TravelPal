@@ -19,7 +19,7 @@ import com.example.travelpal.repository.TravelRepository
 import com.example.travelpal.ui.service.TrackerService
 
 
-class TravelCreateFragment : Fragment(){
+class TravelCreateFragment : Fragment() {
     private lateinit var binding: FragmentTravelCreateBinding
 
     private val travelRepository: TravelRepository by lazy {
@@ -38,7 +38,8 @@ class TravelCreateFragment : Fragment(){
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
-            && permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
+            && permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        ) {
             saveTravelEntity()
         } else {
             Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
@@ -63,14 +64,25 @@ class TravelCreateFragment : Fragment(){
                 -> {
                     saveTravelEntity()
                 }
+
                 ActivityCompat.shouldShowRequestPermissionRationale(
-                    requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
-                        && ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) -> {
+                    requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION
+                )
+                        && ActivityCompat.shouldShowRequestPermissionRationale(
+                    requireActivity(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) -> {
                     Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
                     findNavController().popBackStack()
-                        }
+                }
+
                 else -> {
-                    permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+                    permissionLauncher.launch(
+                        arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        )
+                    )
                 }
             }
         }
@@ -101,7 +113,11 @@ class TravelCreateFragment : Fragment(){
             }
             println("STARTED TRACKING")
 
-            findNavController().navigate(TravelCreateFragmentDirections.actionCreateTravelFragmentToTravelLivetrackingFragment(travelEntityCreated))
+            findNavController().navigate(
+                TravelCreateFragmentDirections.actionCreateTravelFragmentToTravelLivetrackingFragment(
+                    travelEntityCreated
+                )
+            )
             // Navigate back or show a success message
         } else {
             // Show an error message indicating that all fields are required

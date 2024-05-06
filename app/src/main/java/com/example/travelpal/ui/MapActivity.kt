@@ -1,9 +1,7 @@
 package com.example.travelpal.ui
 
 import android.graphics.Color
-import android.location.Location
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.travelpal.R
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -12,9 +10,9 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
-import com.google.android.gms.maps.model.Polygon
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     GoogleMap.OnPolylineClickListener, GoogleMap.OnPolygonClickListener {
@@ -41,11 +39,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         googleMap.addMarker(MarkerOptions().position(brno).title("marker in Brno"))
         googleMap.addMarker(MarkerOptions().position(vienna).title("marker in Vienna"))
 
-        googleMap.addPolyline(PolylineOptions()
-            .clickable(true)
-            .add(
-                brno,
-                vienna))
+        googleMap.addPolyline(
+            PolylineOptions()
+                .clickable(true)
+                .add(
+                    brno,
+                    vienna
+                )
+        )
 
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(brno, 8f))
@@ -64,7 +65,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback,
         polygon.fillColor = Color.BLUE
     }
 
-    fun setUiSetting(googleMap: GoogleMap){
+    fun setUiSetting(googleMap: GoogleMap) {
         val uiSettings = googleMap.uiSettings
 
         uiSettings.isMyLocationButtonEnabled = true

@@ -1,33 +1,18 @@
 package com.example.travelpal.ui.service
 
-import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.location.Location
 import android.os.Binder
-import android.os.Build
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.getSystemService
 import androidx.lifecycle.MutableLiveData
 import com.example.travelpal.R
 import com.example.travelpal.repository.LocationRepository
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -36,7 +21,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-class TrackerService() : Service() {
+class TrackerService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var locationClient: LocationClient
     private var notification: NotificationCompat.Builder? = null
@@ -60,6 +45,7 @@ class TrackerService() : Service() {
     inner class LocalBinder : Binder() {
         fun getService(): TrackerService = this@TrackerService
     }
+
     companion object {
         const val ACTION_START = "ACTION_START"
         const val ACTION_STOP = "ACTION_STOP"
@@ -77,12 +63,13 @@ class TrackerService() : Service() {
         super.onCreate()
         locationClient = LocationClientImpl(
             applicationContext,
-            LocationServices.getFusedLocationProviderClient(applicationContext))
+            LocationServices.getFusedLocationProviderClient(applicationContext)
+        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         travelEntityId = intent?.getLongExtra("travelEntityId", -1L) ?: -1L
-        when(intent?.action){
+        when (intent?.action) {
             ACTION_START -> start()
             ACTION_STOP -> stop()
         }
@@ -90,7 +77,11 @@ class TrackerService() : Service() {
     }
 
     private fun start() {
-        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             notification = NotificationCompat.Builder(this, "location")
                 .setContentTitle("Tracking location...")
                 .setContentText("Location: null")
@@ -99,7 +90,8 @@ class TrackerService() : Service() {
                 .setOnlyAlertOnce(true)
         }
 
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
         locationClient
             .getLocationUpdates(10000L)
             .catch { e -> e.printStackTrace() }
