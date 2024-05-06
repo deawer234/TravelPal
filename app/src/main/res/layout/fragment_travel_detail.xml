@@ -30,7 +30,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <ImageView
+        <com.google.android.gms.maps.MapView
             android:id="@+id/ivMapThumbnail"
             android:layout_width="0dp"
             android:layout_height="200dp"
@@ -40,13 +40,13 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/photosRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="100dp"
             android:padding="10dp"
-            app:layout_constraintTop_toBottomOf="@id/ivMapThumbnail"
+            app:layout_constraintTop_toBottomOf="@id/tvDescription"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

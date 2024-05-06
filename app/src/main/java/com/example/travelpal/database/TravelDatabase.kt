@@ -4,13 +4,14 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.example.travelpal.data.Location
 import com.example.travelpal.data.Photo
 import com.example.travelpal.data.TravelEntity
 
 @Database(
     entities = [TravelEntity::class, Photo::class, Location::class],
-    version = 2
+    version = 8
 )
 abstract class TravelDatabase : RoomDatabase() {
     companion object {
@@ -26,4 +27,6 @@ abstract class TravelDatabase : RoomDatabase() {
     abstract fun travelEntityDao(): TravelEntityDao
 
     abstract fun photoDao(): PhotoDao
+
+    abstract fun locationDao(): LocationDao
 }

@@ -13,9 +13,12 @@ interface TravelEntityDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun persistTravelData(travelEntity: TravelEntity): Long
 
-    @Delete
+    @Delete()
     fun deleteTravelData(travelEntity: TravelEntity)
 
     @Query("SELECT * FROM TravelEntity")
     fun selectAllRoutes(): List<TravelEntity>
+
+    @Query("SELECT * FROM TravelEntity WHERE id = :id")
+    fun selectRouteById(id: Long): TravelEntity
 }

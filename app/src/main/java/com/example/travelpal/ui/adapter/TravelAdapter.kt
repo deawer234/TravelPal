@@ -16,7 +16,13 @@ class TravelAdapter(
 ) : ListAdapter<TravelEntity, TravelViewHolder>(TravelDiffUtil()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TravelViewHolder =
-        TravelViewHolder(ItemTripBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+        TravelViewHolder(
+            ItemTripBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+        )
 
 
     override fun onBindViewHolder(holder: TravelViewHolder, position: Int) {
@@ -27,7 +33,8 @@ class TravelAdapter(
 }
 
 
-class TravelViewHolder( private val binding: ItemTripBinding
+class TravelViewHolder(
+    private val binding: ItemTripBinding
 ) : RecyclerView.ViewHolder(binding.root) {
     fun bind(item: TravelEntity, onClick: (TravelEntity) -> Unit) {
 
