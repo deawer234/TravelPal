@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.travelpal.data.Location
@@ -13,6 +14,7 @@ import com.example.travelpal.databinding.FragmentTravelDetailBinding
 import com.example.travelpal.repository.LocationRepository
 import com.example.travelpal.repository.PhotoRepository
 import com.example.travelpal.ui.adapter.PhotoAdapter
+import com.example.travelpal.ui.util.Chart
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -20,6 +22,13 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.formatter.ValueFormatter
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -50,6 +59,7 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        locations = locationRepository.getAllTravelLocations(args.travelEntity.id)
 
         val photos = photoRepository.getAllPhotosForTravel(args.travelEntity.id)
         binding.photosRecyclerView.apply {
@@ -63,22 +73,25 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         binding.tvDescription.text = args.travelEntity.description
         binding.tvDestinationName.text = args.travelEntity.destinationName
 
-        locations = locationRepository.getAllTravelLocations(args.travelEntity.id)
-        val elevationData = locations.map { it.traveled }
+        var average = 0f
+        locations.forEach {
+            average += it.speed
+        }
+        average /= locations.size
 
-//        // Create a series using elevation data
-//        val series: XYSeries = SimpleXYSeries(
-//            elevationData,
-//            SimpleXYSeries.ArrayFormat.Y_VALS_ONLY,
-//            "Elevation"
-//        )
-//
-//        // Create a formatter to use for drawing a series using LineAndPointRenderer:
-//        val seriesFormat = LineAndPointFormatter(Color.RED, Color.GREEN, null, null)
-//
-//        // Add series to the plot:
-//        val plot: XYPlot = binding.elevationChart
-//        plot.addSeries(series, seriesFormat)
+        val averageSpeedText = "Average speed: %.2f km/h".format(average*3.6)
+        val distanceTraveledText = "Distance traveled: %.2f km".format(locations.last().traveled/1000)
+        binding.averageSpeed.text = averageSpeedText
+        binding.distanceTraveled.text = distanceTraveledText
+
+        binding.steps.text = "Steps: ${locations.last().steps}"
+
+        val totalTime = (locations.last().visitDate.toLong() - locations.first().visitDate.toLong())/1000
+        binding.totalTime.text = "Total time: ${totalTime}"
+        val chart = Chart()
+        lifecycleScope.launch {
+            chart.getElevationChartData(binding.elevationChart, locations)
+        }
     }
 
 

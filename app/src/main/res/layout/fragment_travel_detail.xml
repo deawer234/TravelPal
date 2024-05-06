@@ -30,23 +30,71 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <TextView
+            android:id="@+id/averageSpeed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:layout_constraintTop_toBottomOf="@id/tvDescription"
+            app:layout_constraintRight_toLeftOf="@id/distanceTraveled"
+            app:layout_constraintLeft_toLeftOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/distanceTraveled"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:layout_constraintTop_toBottomOf="@id/tvDescription"
+            app:layout_constraintLeft_toRightOf="@id/averageSpeed"
+            app:layout_constraintRight_toRightOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/steps"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:layout_constraintTop_toBottomOf="@id/averageSpeed"
+            app:layout_constraintRight_toLeftOf="@id/totalTime"
+            app:layout_constraintLeft_toLeftOf ="parent"
+            />
+
+        <TextView
+            android:id="@+id/totalTime"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:layout_constraintTop_toBottomOf="@id/distanceTraveled"
+            app:layout_constraintLeft_toRightOf="@id/steps"
+            app:layout_constraintRight_toRightOf="parent"
+            />
+
         <com.google.android.gms.maps.MapView
             android:id="@+id/ivMapThumbnail"
             android:layout_width="0dp"
             android:layout_height="200dp"
-            android:layout_marginTop="16dp"
+            android:layout_margin="16dp"
             android:contentDescription="@string/map_thumbnail"
             app:layout_constraintTop_toBottomOf="@id/tvDestinationName"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/elevationChart"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_margin="16dp"
+            app:layout_constraintTop_toBottomOf="@id/steps"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/photosRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            app:layout_constraintTop_toBottomOf="@id/tvDescription"
+            android:layout_margin="16dp"
+            app:layout_constraintTop_toBottomOf="@id/elevationChart"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

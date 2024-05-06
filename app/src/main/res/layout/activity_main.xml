@@ -41,6 +41,4 @@
             android:maxLines="1"
             android:ellipsize="end" />
     </androidx.appcompat.widget.Toolbar>
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>
