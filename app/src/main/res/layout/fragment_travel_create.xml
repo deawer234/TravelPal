@@ -11,6 +11,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="@string/destination_name"
+        android:textColor="@color/purple"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -20,6 +21,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="@string/date"
+        android:textColor="@color/purple"
         app:layout_constraintTop_toBottomOf="@id/etDestinationName"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -29,6 +31,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="@string/description"
+        android:textColor="@color/purple"
         app:layout_constraintTop_toBottomOf="@id/etDate"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
