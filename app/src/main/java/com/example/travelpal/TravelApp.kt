@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 
+
 class TravelApp: Application(){
     override fun onCreate() {
         super.onCreate()

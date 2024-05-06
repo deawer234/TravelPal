@@ -29,14 +29,14 @@ class LocationClientImpl(
     ): LocationClient {
 
     private lateinit var sensorManager: SensorManager
-    private var stepCounterSensor: Sensor? = null
+    private var stepDetectorSensor: Sensor? = null
     private lateinit var sensorEventListener: SensorEventListener
     private var stepCount = 0
+    //private val data = mutableMapOf<Location, Int>()
 
     @SuppressLint("MissingPermission")
-    override fun getLocationUpdates(interval: Long): Flow<Map<Int, Location>> {
+    override fun getLocationUpdates(interval: Long): Flow<Map<Location, Int>> {
         return callbackFlow {
-            print("LocationClientImpl getLocationUpdates")
             if(!context.hasLocationPermission()){
                 throw LocationClient.LocationException("Location permission not granted")
             }
@@ -60,7 +60,7 @@ class LocationClientImpl(
                 override fun onLocationResult(locationResult: LocationResult) {
                     super.onLocationResult(locationResult)
                     locationResult.locations.lastOrNull()?.let {
-                        val data = mapOf(stepCount to it)
+                        val data = mapOf(it to stepCount)
                         launch { send(data) }
                     }
                 }
@@ -80,7 +80,7 @@ class LocationClientImpl(
     }
     private fun startStepCounter() {
         sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        stepDetectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
 
         sensorEventListener = object : SensorEventListener {
             override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
@@ -88,14 +88,14 @@ class LocationClientImpl(
             }
 
             override fun onSensorChanged(event: SensorEvent) {
-                if (event.sensor == stepCounterSensor) {
-                    stepCount = event.values[0].toInt()
+                if (event.sensor == stepDetectorSensor) {
+                    stepCount += event.values[0].toInt()
                     // Do something with the step count
                     // For example, you can save it to your database or display it in your UI
                 }
             }
         }
-        sensorManager.registerListener(sensorEventListener, stepCounterSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(sensorEventListener, stepDetectorSensor, SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     private fun stopStepCounter() {

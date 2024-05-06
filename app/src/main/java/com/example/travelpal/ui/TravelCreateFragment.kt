@@ -26,21 +26,6 @@ class TravelCreateFragment : Fragment(){
         TravelRepository(requireContext())
     }
 
-    private val locationPermissionRequest = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        when {
-            permissions.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-                // Precise location access granted.
-            }
-            permissions.getOrDefault(android.Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-                // Only approximate location access granted.
-            } else -> {
-            // No location access granted.
-        }
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -49,61 +34,21 @@ class TravelCreateFragment : Fragment(){
         return binding.root
     }
 
-//    private val requestPermission =
-//        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-//            if (isGranted) {
-//                saveTravelEntity()
-//            } else {
-//                Snackbar.make(
-//                    binding.root,
-//                    "Permissions are required to create a travel",
-//                    Snackbar.LENGTH_SHORT
-//                ).show()
-//            }
-//        }
-
-//    private var activityResultLauncher: ActivityResultLauncher<Array<String>>
-//    init {
-//        this.activityResultLauncher = registerForActivityResult(
-//            ActivityResultContracts.RequestMultiplePermissions()
-//        ) { result ->
-//            var allAreGranted = true
-//            for (b in result.values) {
-//                allAreGranted = allAreGranted && b
-//            }
-//
-//            if (allAreGranted) {
-//                saveTravelEntity()
-//            } else {
-//                ActivityCompat.requestPermissions(
-//                    requireActivity(),
-//                    arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.POST_NOTIFICATIONS),
-//                    1)
-//            }
-//        }
-//    }
-
     val permissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+            && permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
             saveTravelEntity()
-        }
-        else {
+        } else {
             Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
+            findNavController().popBackStack()
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
-        //permissionsManager.checkAndRequestPermissions()
-//        if(ContextCompat.checkSelfPermission(requireActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
-//            == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION)
-//            == PackageManager.PERMISSION_GRANTED) {
-//
-//        }
 
         binding.btnSave.setOnClickListener {
             when {
@@ -122,10 +67,10 @@ class TravelCreateFragment : Fragment(){
                     requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
                         && ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) -> {
                     Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
-                }
+                    findNavController().popBackStack()
+                        }
                 else -> {
-                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                    permissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
                 }
             }
         }

@@ -22,6 +22,9 @@ data class Location(
     val travelEntryId: Long,
     val latitude: Double,
     val longitude: Double,
-    val name: String?,
-    val visitDate: String
+    val visitDate: String,
+    val steps: Int,
+    val elevation: Double,
+    val traveled: Float,
+    val speed: Float
 ) : Parcelable

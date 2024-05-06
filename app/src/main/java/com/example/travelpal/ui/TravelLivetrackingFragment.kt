@@ -12,11 +12,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.travelpal.databinding.FragmentTravelLivetrackingBinding
 import com.example.travelpal.ui.service.TrackerService
-import kotlinx.coroutines.Job
 
 class TravelLivetrackingFragment : Fragment() {
     private val args: TravelLivetrackingFragmentArgs by navArgs()
@@ -26,25 +26,28 @@ class TravelLivetrackingFragment : Fragment() {
 
     //private lateinit var googleMap: GoogleMap
 
-    private val handler = Handler(Looper.getMainLooper())
-    private val runnable = object : Runnable {
-        override fun run() {
-            // Update your UI here
-            //TODO
-            binding.speed.text = trackerService?.getAverageSpeed().toString()
-            binding.distance.text = trackerService?.getTotalDistance().toString()
-            binding.elevation.text = trackerService?.getLastAltitude().toString()
-            binding.steps.text = trackerService?.getStepCount().toString()
-            handler.postDelayed(this, 5000) // Run this every 5 seconds
-        }
-    }
-
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as TrackerService.LocalBinder
             trackerService = binder.getService()
             isBound = true
+
+            trackerService?.stepCountData?.observe(viewLifecycleOwner) { stepCount ->
+                binding.steps.text = stepCount.toString()
+            }
+
+            trackerService?.totalDistanceData?.observe(viewLifecycleOwner) { totalDistance ->
+                binding.distance.text = totalDistance.toString()
+            }
+
+            trackerService?.averageSpeedData?.observe(viewLifecycleOwner) { averageSpeed ->
+                binding.speed.text = averageSpeed.toString()
+            }
+
+            trackerService?.lastAltitudeData?.observe(viewLifecycleOwner) { lastAltitude ->
+                binding.elevation.text = lastAltitude.toString()
+            }
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -88,9 +91,5 @@ class TravelLivetrackingFragment : Fragment() {
             print("STOPPED TRACKING")
             findNavController().navigate(TravelLivetrackingFragmentDirections.actionTravelLivetrackingFragmentToTravelListFragment())
         }
-
-
-
-        handler.post(runnable)
     }
 }
