@@ -10,6 +10,7 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Looper
 import android.widget.Toast
+import androidx.core.content.ContextCompat.getSystemService
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -20,19 +21,14 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 class LocationClientImpl(
     private val context: Context,
     private val client: FusedLocationProviderClient
 ) : LocationClient {
-
-    private lateinit var sensorManager: SensorManager
-    private var stepDetectorSensor: Sensor? = null
-    private lateinit var sensorEventListener: SensorEventListener
-    private var stepCount = 0
-
     @SuppressLint("MissingPermission")
-    override fun getLocationUpdates(interval: Long): Flow<Map<Location, Int>> {
+    override fun getLocationUpdates(interval: Long): Flow<Location> {
         return callbackFlow {
             if (!context.hasLocationPermission()) {
                 throw LocationClient.LocationException("Location permission not granted")
@@ -56,14 +52,11 @@ class LocationClientImpl(
                 .setIntervalMillis(interval)
                 .build()
 
-            startStepCounter()
-
             val locationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
                     super.onLocationResult(locationResult)
                     locationResult.locations.lastOrNull()?.let {
-                        val data = mapOf(it to stepCount)
-                        launch { send(data) }
+                        launch { send(it) }
                     }
                 }
             }
@@ -75,34 +68,9 @@ class LocationClientImpl(
             )
 
             awaitClose {
-                stopStepCounter()
                 client.removeLocationUpdates(locationCallback)
             }
         }
     }
 
-    private fun startStepCounter() {
-        sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        stepDetectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-
-        sensorEventListener = object : SensorEventListener {
-            override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-            }
-
-            override fun onSensorChanged(event: SensorEvent) {
-                if (event.sensor == stepDetectorSensor) {
-                    stepCount += event.values[0].toInt()
-                }
-            }
-        }
-        sensorManager.registerListener(
-            sensorEventListener,
-            stepDetectorSensor,
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
-    }
-
-    private fun stopStepCounter() {
-        sensorManager.unregisterListener(sensorEventListener)
-    }
 }

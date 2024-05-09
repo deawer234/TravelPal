@@ -26,6 +26,8 @@ import kotlin.random.Random
 
 class TrackerService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private lateinit var stepCounter: StepCounter
     private lateinit var locationClient: LocationClient
     private var notification: NotificationCompat.Builder? = null
 
@@ -69,6 +71,7 @@ class TrackerService : Service() {
             applicationContext,
             LocationServices.getFusedLocationProviderClient(applicationContext)
         )
+        stepCounter = StepCounter(applicationContext)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -94,42 +97,41 @@ class TrackerService : Service() {
                 .setOnlyAlertOnce(true)
         }
 
-//        schedulePhotoReminder()
+        stepCountData.postValue(stepCounter.getStepCount())
 
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+
         locationClient
             .getLocationUpdates(5000L)
             .catch { e -> e.printStackTrace() }
             .onEach {
-                it.entries.lastOrNull()?.let { entry ->
-                    if (startingLocation == null) {
-                        startingLocation = entry.key
-                        lastLocation = entry.key
-                        startTime = System.currentTimeMillis()
-                    }
-                    locationsData.postValue(entry.key)
-                    stepCountData.postValue(entry.value)
-
-                    totalDistance += entry.key.distanceTo(lastLocation)
-                    totalDistanceData.postValue(totalDistance)
-
-                    averageSpeedData.postValue(entry.key.speed)
-
-                    lastAltitudeData.postValue(entry.key.altitude)
-
-                    lastLocation = entry.key
-                    saveLocationPoint(entry.key, travelEntityId)
-                    notification?.setContentText("Location: ${entry.key.latitude}, ${entry.key.longitude}")
-
+                if (startingLocation == null) {
+                    startingLocation = it
+                    lastLocation = it
+                    startTime = System.currentTimeMillis()
                 }
+
+                locationsData.postValue(it)
+
+                totalDistance += it.distanceTo(lastLocation)
+                totalDistanceData.postValue(totalDistance)
+
+                averageSpeedData.postValue(it.speed)
+
+                lastAltitudeData.postValue(it.altitude)
+
+                lastLocation = it
+
+                saveLocationPoint(it, travelEntityId)
+                notification?.setContentText("Location: ${it.latitude}, ${it.longitude}")
                 notificationManager.notify(1, notification?.build())
             }
             .launchIn(serviceScope)
+
         startForeground(1, notification?.build())
 
     }
-
 
     private fun stop() {
         stopForeground(true)
@@ -141,8 +143,6 @@ class TrackerService : Service() {
         super.onDestroy()
         serviceScope.cancel()
     }
-
-
 
     private fun saveLocationPoint(location: Location, travelEntityId: Long) {
         val newLocation = com.example.travelpal.data.Location(
