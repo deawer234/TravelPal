@@ -43,8 +43,9 @@ class TrackerService : Service() {
     val averageSpeedData = MutableLiveData<Float>()
     val lastAltitudeData = MutableLiveData<Double>()
 
-    private val binder = LocalBinder()
+    val locationsData = MutableLiveData<Location>()
 
+    private val binder = LocalBinder()
     inner class LocalBinder : Binder() {
         fun getService(): TrackerService = this@TrackerService
     }
@@ -107,6 +108,7 @@ class TrackerService : Service() {
                         lastLocation = entry.key
                         startTime = System.currentTimeMillis()
                     }
+                    locationsData.postValue(entry.key)
                     stepCountData.postValue(entry.value)
 
                     totalDistance += entry.key.distanceTo(lastLocation)
@@ -140,14 +142,7 @@ class TrackerService : Service() {
         serviceScope.cancel()
     }
 
-//    private fun schedulePhotoReminder() {
-//        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-//        val intent = Intent(this, PhotoNotificationReceiver::class.java)
-//        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-//
-//        val randomTime = Random.nextLong(1, 3) * 60 * 1000  // Random time between 1 and 60 minutes
-//        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + randomTime, pendingIntent)
-//    }
+
 
     private fun saveLocationPoint(location: Location, travelEntityId: Long) {
         val newLocation = com.example.travelpal.data.Location(
@@ -163,21 +158,5 @@ class TrackerService : Service() {
         locationRepository.createLocation(newLocation)
         println(newLocation)
     }
-
-//    fun getStepCount(): Int {
-//        return stepCount
-//    }
-//
-//    fun getTotalDistance(): Float {
-//        return totalDistance
-//    }
-//
-//    fun getAverageSpeed(): Float {
-//        return speed
-//    }
-//    fun getLastAltitude(): Double {
-//        return altitude
-//    }
-
 
 }

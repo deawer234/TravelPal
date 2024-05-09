@@ -141,25 +141,35 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         )
     }
 
+    override fun onStart() {
+        super.onStart()
+        binding.ivMapThumbnail.onStart()
+    }
+
 
     override fun onResume() {
         super.onResume()
         binding.ivMapThumbnail.onResume()
     }
 
-    override fun onPause() {
-        binding.ivMapThumbnail.onPause()
-        super.onPause()
+    override fun onStop() {
+        super.onStop()
+        binding.ivMapThumbnail.onStop()
     }
 
-    override fun onDestroy() {
-        binding.ivMapThumbnail.onDestroy()
-        super.onDestroy()
+    override fun onPause() {
+        super.onPause()
+        binding.ivMapThumbnail.onPause()
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
         binding.ivMapThumbnail.onLowMemory()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        binding.ivMapThumbnail.onSaveInstanceState(outState)
     }
 
 

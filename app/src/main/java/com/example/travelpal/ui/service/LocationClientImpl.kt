@@ -9,6 +9,7 @@ import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Looper
+import android.widget.Toast
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -29,7 +30,6 @@ class LocationClientImpl(
     private var stepDetectorSensor: Sensor? = null
     private lateinit var sensorEventListener: SensorEventListener
     private var stepCount = 0
-    //private val data = mutableMapOf<Location, Int>()
 
     @SuppressLint("MissingPermission")
     override fun getLocationUpdates(interval: Long): Flow<Map<Location, Int>> {
@@ -44,13 +44,16 @@ class LocationClientImpl(
             val isNetworkEnabled =
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
             if (!isGpsEnabled && !isNetworkEnabled) {
+                Toast.makeText(context, "GPS is disabled", Toast.LENGTH_SHORT).show()
                 throw LocationClient.LocationException("GPS is disabled")
             }
 
-            val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
+            val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, interval)
                 .setWaitForAccurateLocation(true)
                 .setMinUpdateIntervalMillis(interval - interval / 2)
                 .setMaxUpdateDelayMillis(interval + interval / 2)
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .setIntervalMillis(interval)
                 .build()
 
             startStepCounter()
@@ -80,18 +83,15 @@ class LocationClientImpl(
 
     private fun startStepCounter() {
         sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        stepDetectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
+        stepDetectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
 
         sensorEventListener = object : SensorEventListener {
             override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-                // You can implement this method if you want to react to changes in the sensor's accuracy
             }
 
             override fun onSensorChanged(event: SensorEvent) {
                 if (event.sensor == stepDetectorSensor) {
                     stepCount += event.values[0].toInt()
-                    // Do something with the step count
-                    // For example, you can save it to your database or display it in your UI
                 }
             }
         }
