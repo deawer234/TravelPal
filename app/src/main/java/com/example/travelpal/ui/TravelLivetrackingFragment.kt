@@ -10,9 +10,11 @@ import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.example.travelpal.R
 import com.example.travelpal.databinding.FragmentTravelLivetrackingBinding
 import com.example.travelpal.ui.service.TrackerService
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -82,7 +84,6 @@ class TravelLivetrackingFragment : Fragment() {
                 putExtra("travelEntityId", args.travelEntity.id)
                 requireActivity().startService(this)
             }
-            print("STOPPED TRACKING")
             findNavController().navigate(TravelLivetrackingFragmentDirections.actionTravelLivetrackingFragmentToTravelListFragment())
         }
 
@@ -91,7 +92,6 @@ class TravelLivetrackingFragment : Fragment() {
             this.googleMap = googleMap
             addAllPolylines()
         }
-
     }
 
     private fun moveCameraToUser() {

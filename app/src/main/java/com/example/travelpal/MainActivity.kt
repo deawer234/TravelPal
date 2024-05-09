@@ -37,7 +37,12 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
-        val appBarConfiguration = AppBarConfiguration(navController.graph)
+        val appBarConfiguration = AppBarConfiguration(setOf(
+            R.id.nav_host_fragment,
+            R.id.home,
+            R.id.travelListFragment,
+            R.id.travelLivetrackingFragment
+        ))
 
         binding.toolbar.setupWithNavController(navController, appBarConfiguration)
 
