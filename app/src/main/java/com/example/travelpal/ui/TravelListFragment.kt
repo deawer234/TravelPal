@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.travelpal.R
 import com.example.travelpal.databinding.FragmentTravelListBinding
 import com.example.travelpal.repository.TravelRepository
 import com.example.travelpal.ui.adapter.TravelAdapter
@@ -51,7 +52,7 @@ class TravelListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        findNavController().clearBackStack(R.id.travelLivetrackingFragment)
         binding.rvTravelEntries.layoutManager = LinearLayoutManager(requireContext())
         binding.rvTravelEntries.adapter = adapter
 

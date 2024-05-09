@@ -26,6 +26,8 @@ import kotlin.random.Random
 
 class TrackerService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private lateinit var stepCounter: StepCounter
     private lateinit var locationClient: LocationClient
     private var notification: NotificationCompat.Builder? = null
 
@@ -43,8 +45,9 @@ class TrackerService : Service() {
     val averageSpeedData = MutableLiveData<Float>()
     val lastAltitudeData = MutableLiveData<Double>()
 
-    private val binder = LocalBinder()
+    val locationsData = MutableLiveData<Location>()
 
+    private val binder = LocalBinder()
     inner class LocalBinder : Binder() {
         fun getService(): TrackerService = this@TrackerService
     }
@@ -68,6 +71,7 @@ class TrackerService : Service() {
             applicationContext,
             LocationServices.getFusedLocationProviderClient(applicationContext)
         )
+        stepCounter = StepCounter(applicationContext)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -93,41 +97,41 @@ class TrackerService : Service() {
                 .setOnlyAlertOnce(true)
         }
 
-//        schedulePhotoReminder()
+        stepCountData.postValue(stepCounter.getStepCount())
 
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+
         locationClient
             .getLocationUpdates(5000L)
             .catch { e -> e.printStackTrace() }
             .onEach {
-                it.entries.lastOrNull()?.let { entry ->
-                    if (startingLocation == null) {
-                        startingLocation = entry.key
-                        lastLocation = entry.key
-                        startTime = System.currentTimeMillis()
-                    }
-                    stepCountData.postValue(entry.value)
-
-                    totalDistance += entry.key.distanceTo(lastLocation)
-                    totalDistanceData.postValue(totalDistance)
-
-                    averageSpeedData.postValue(entry.key.speed)
-
-                    lastAltitudeData.postValue(entry.key.altitude)
-
-                    lastLocation = entry.key
-                    saveLocationPoint(entry.key, travelEntityId)
-                    notification?.setContentText("Location: ${entry.key.latitude}, ${entry.key.longitude}")
-
+                if (startingLocation == null) {
+                    startingLocation = it
+                    lastLocation = it
+                    startTime = System.currentTimeMillis()
                 }
+
+                locationsData.postValue(it)
+
+                totalDistance += it.distanceTo(lastLocation)
+                totalDistanceData.postValue(totalDistance)
+
+                averageSpeedData.postValue(it.speed)
+
+                lastAltitudeData.postValue(it.altitude)
+
+                lastLocation = it
+
+                saveLocationPoint(it, travelEntityId)
+                notification?.setContentText("Location: ${it.latitude}, ${it.longitude}")
                 notificationManager.notify(1, notification?.build())
             }
             .launchIn(serviceScope)
+
         startForeground(1, notification?.build())
 
     }
-
 
     private fun stop() {
         stopForeground(true)
@@ -139,15 +143,6 @@ class TrackerService : Service() {
         super.onDestroy()
         serviceScope.cancel()
     }
-
-//    private fun schedulePhotoReminder() {
-//        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-//        val intent = Intent(this, PhotoNotificationReceiver::class.java)
-//        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-//
-//        val randomTime = Random.nextLong(1, 3) * 60 * 1000  // Random time between 1 and 60 minutes
-//        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + randomTime, pendingIntent)
-//    }
 
     private fun saveLocationPoint(location: Location, travelEntityId: Long) {
         val newLocation = com.example.travelpal.data.Location(
@@ -163,21 +158,5 @@ class TrackerService : Service() {
         locationRepository.createLocation(newLocation)
         println(newLocation)
     }
-
-//    fun getStepCount(): Int {
-//        return stepCount
-//    }
-//
-//    fun getTotalDistance(): Float {
-//        return totalDistance
-//    }
-//
-//    fun getAverageSpeed(): Float {
-//        return speed
-//    }
-//    fun getLastAltitude(): Double {
-//        return altitude
-//    }
-
 
 }

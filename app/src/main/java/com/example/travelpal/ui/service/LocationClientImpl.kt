@@ -9,6 +9,8 @@ import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Looper
+import android.widget.Toast
+import androidx.core.content.ContextCompat.getSystemService
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -19,20 +21,14 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 class LocationClientImpl(
     private val context: Context,
     private val client: FusedLocationProviderClient
 ) : LocationClient {
-
-    private lateinit var sensorManager: SensorManager
-    private var stepDetectorSensor: Sensor? = null
-    private lateinit var sensorEventListener: SensorEventListener
-    private var stepCount = 0
-    //private val data = mutableMapOf<Location, Int>()
-
     @SuppressLint("MissingPermission")
-    override fun getLocationUpdates(interval: Long): Flow<Map<Location, Int>> {
+    override fun getLocationUpdates(interval: Long): Flow<Location> {
         return callbackFlow {
             if (!context.hasLocationPermission()) {
                 throw LocationClient.LocationException("Location permission not granted")
@@ -44,23 +40,23 @@ class LocationClientImpl(
             val isNetworkEnabled =
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
             if (!isGpsEnabled && !isNetworkEnabled) {
+                Toast.makeText(context, "GPS is disabled", Toast.LENGTH_SHORT).show()
                 throw LocationClient.LocationException("GPS is disabled")
             }
 
-            val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
+            val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, interval)
                 .setWaitForAccurateLocation(true)
                 .setMinUpdateIntervalMillis(interval - interval / 2)
                 .setMaxUpdateDelayMillis(interval + interval / 2)
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .setIntervalMillis(interval)
                 .build()
-
-            startStepCounter()
 
             val locationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
                     super.onLocationResult(locationResult)
                     locationResult.locations.lastOrNull()?.let {
-                        val data = mapOf(it to stepCount)
-                        launch { send(data) }
+                        launch { send(it) }
                     }
                 }
             }
@@ -72,37 +68,9 @@ class LocationClientImpl(
             )
 
             awaitClose {
-                stopStepCounter()
                 client.removeLocationUpdates(locationCallback)
             }
         }
     }
 
-    private fun startStepCounter() {
-        sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        stepDetectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
-
-        sensorEventListener = object : SensorEventListener {
-            override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-                // You can implement this method if you want to react to changes in the sensor's accuracy
-            }
-
-            override fun onSensorChanged(event: SensorEvent) {
-                if (event.sensor == stepDetectorSensor) {
-                    stepCount += event.values[0].toInt()
-                    // Do something with the step count
-                    // For example, you can save it to your database or display it in your UI
-                }
-            }
-        }
-        sensorManager.registerListener(
-            sensorEventListener,
-            stepDetectorSensor,
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
-    }
-
-    private fun stopStepCounter() {
-        sensorManager.unregisterListener(sensorEventListener)
-    }
 }
