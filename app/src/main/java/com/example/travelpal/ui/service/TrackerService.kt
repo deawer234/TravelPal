@@ -72,6 +72,7 @@ class TrackerService : Service() {
             LocationServices.getFusedLocationProviderClient(applicationContext)
         )
         stepCounter = StepCounter(applicationContext)
+
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -97,7 +98,7 @@ class TrackerService : Service() {
                 .setOnlyAlertOnce(true)
         }
 
-        stepCountData.postValue(stepCounter.getStepCount())
+        stepCounter.startTrackingSteps()
 
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
@@ -111,6 +112,7 @@ class TrackerService : Service() {
                     lastLocation = it
                     startTime = System.currentTimeMillis()
                 }
+                stepCountData.postValue(stepCounter.getStepCount())
 
                 locationsData.postValue(it)
 
