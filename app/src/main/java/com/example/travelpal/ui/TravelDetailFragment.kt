@@ -22,13 +22,15 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.formatter.ValueFormatter
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import android.Manifest
+import android.app.Activity
+import android.app.AlertDialog
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.core.content.ContextCompat
+import com.example.travelpal.ui.adapter.ImagesAdapter
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -39,6 +41,10 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
     private lateinit var binding: FragmentTravelDetailBinding
 
     private lateinit var locations: List<Location>
+
+    private lateinit var imagesAdapter: ImagesAdapter
+
+    private var imageList: MutableList<String> = mutableListOf()
 
     private val photoRepository: PhotoRepository by lazy {
         PhotoRepository(requireContext())
@@ -61,11 +67,22 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState)
         locations = locationRepository.getAllTravelLocations(args.travelEntity.id)
 
-        val photos = photoRepository.getAllPhotosForTravel(args.travelEntity.id)
+//        val photos = photoRepository.getAllPhotosForTravel(args.travelEntity.id)
+//        binding.photosRecyclerView.apply {
+//            layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
+//            adapter = PhotoAdapter(requireContext(), photos)
+//        }
+
+        imagesAdapter = ImagesAdapter(imageList)
         binding.photosRecyclerView.apply {
             layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
-            adapter = PhotoAdapter(requireContext(), photos)
+            adapter = imagesAdapter
         }
+
+        binding.addImg.setOnClickListener {
+            openGalleryToSelectImages()
+        }
+
 
         binding.ivMapThumbnail.onCreate(savedInstanceState)
         binding.ivMapThumbnail.getMapAsync(this)
@@ -141,6 +158,90 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         )
     }
 
+    private fun requestStoragePermission() {
+        requestPermissions(
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+            REQUEST_STORAGE_PERMISSION
+        )
+    }
+
+    private fun openGalleryToSelectImages() {
+        val intent = Intent(Intent.ACTION_PICK).apply {
+            type = "image/*"
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        }
+        startActivityForResult(intent, REQUEST_PICK_IMAGE)
+    }
+
+    companion object {
+        private const val REQUEST_STORAGE_PERMISSION = 101
+        private const val REQUEST_PICK_IMAGE = 102
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_STORAGE_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openGalleryToSelectImages()
+            } else {
+                Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK && data != null) {
+            val clipData = data.clipData
+            if (clipData != null) {
+                // Handle multiple images
+                for (i in 0 until clipData.itemCount) {
+                    val imageUri = clipData.getItemAt(i).uri
+                    imageList.add(imageUri.toString())
+                }
+            } else if (data.data != null) {
+                // Handle single image selection
+                val imageUri = data.data!!
+                imageList.add(imageUri.toString())
+            }
+            imagesAdapter.notifyDataSetChanged()
+        }
+    }
+
+
+
+    private fun checkAndRequestStoragePermission() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // Should we show an explanation?
+            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                // Explain to the user why we need to read the contacts
+                showExplanationDialog()
+            } else {
+                // No explanation needed, we can request the permission.
+                requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_STORAGE_PERMISSION)
+            }
+        } else {
+            openGalleryToSelectImages()
+        }
+    }
+
+    private fun showExplanationDialog() {
+        AlertDialog.Builder(context)
+            .setTitle("Storage Permission Needed")
+            .setMessage("This app needs the Storage permission to select images from your gallery.")
+            .setPositiveButton("OK") { dialog, which ->
+                requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_STORAGE_PERMISSION)
+            }
+            .setNegativeButton("Cancel") { dialog, which ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
+    }
+
+
+
     override fun onStart() {
         super.onStart()
         binding.ivMapThumbnail.onStart()
@@ -171,6 +272,4 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         super.onSaveInstanceState(outState)
         binding.ivMapThumbnail.onSaveInstanceState(outState)
     }
-
-
 }
