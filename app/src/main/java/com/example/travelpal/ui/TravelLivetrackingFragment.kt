@@ -99,7 +99,7 @@ class TravelLivetrackingFragment : Fragment() {
             googleMap?.animateCamera(
                 CameraUpdateFactory.newLatLngZoom(
                     pathPoints.last(),
-                    15f
+                    10f
                 )
             )
         }
@@ -118,7 +118,7 @@ class TravelLivetrackingFragment : Fragment() {
             val preLastPoint = pathPoints[pathPoints.size - 2]
             val lastPoint = pathPoints.last()
             val polylineOptions = PolylineOptions()
-                .color(Color.BLUE)
+                .color(Color.RED)
                 .width(5f)
                 .add(preLastPoint)
                 .add(lastPoint)
