@@ -30,6 +30,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import com.example.travelpal.data.Photo
 import com.example.travelpal.ui.adapter.ImagesAdapter
 
 /**
@@ -109,6 +110,7 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         lifecycleScope.launch {
             chart.getElevationChartData(binding.elevationChart, locations)
         }
+        loadPhotos()
     }
 
 
@@ -194,21 +196,44 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK && data != null) {
             val clipData = data.clipData
+            val photosToInsert = mutableListOf<Photo>()
             if (clipData != null) {
-                // Handle multiple images
                 for (i in 0 until clipData.itemCount) {
                     val imageUri = clipData.getItemAt(i).uri
-                    imageList.add(imageUri.toString())
+                    val photo = Photo(
+                        travelEntryId = args.travelEntity.id,
+                        uri = imageUri.toString(),
+                        description = "",  // Update or leave blank based on your UI/design
+                        dateTaken = System.currentTimeMillis()
+                    )
+                    photosToInsert.add(photo)
                 }
             } else if (data.data != null) {
-                // Handle single image selection
                 val imageUri = data.data!!
-                imageList.add(imageUri.toString())
+                val photo = Photo(
+                    travelEntryId = args.travelEntity.id,
+                    uri = imageUri.toString(),
+                    description = "",
+                    dateTaken = System.currentTimeMillis()
+                )
+                photosToInsert.add(photo)
             }
+
+            // Insert photos into the database
+            photoRepository.insertPhotos(photosToInsert)
+            imageList.addAll(photosToInsert.map { it.uri })
             imagesAdapter.notifyDataSetChanged()
         }
     }
 
+    private fun loadPhotos() {
+        lifecycleScope.launch {
+            val photos = photoRepository.getAllPhotosForTravel(args.travelEntity.id)
+            imageList.clear()
+            imageList.addAll(photos.map { it.uri })
+            imagesAdapter.notifyDataSetChanged()
+        }
+    }
 
 
     private fun checkAndRequestStoragePermission() {

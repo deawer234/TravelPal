@@ -20,10 +20,9 @@ class ImagesAdapter(private val images: MutableList<String>) : RecyclerView.Adap
     }
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
-        Glide.with(holder.itemView.context)
-            .load(images[position])
-            .into(holder.imageView)
+        val uri = Uri.parse(images[position])
+        Glide.with(holder.itemView.context).load(uri).into(holder.imageView)
     }
 
-    override fun getItemCount(): Int = images.size
+    override fun getItemCount() = images.size
 }
