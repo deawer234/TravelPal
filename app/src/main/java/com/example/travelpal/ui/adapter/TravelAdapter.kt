@@ -10,6 +10,7 @@ import coil.transform.RoundedCornersTransformation
 import com.example.travelpal.R
 import com.example.travelpal.data.TravelEntity
 import com.example.travelpal.databinding.ItemTripBinding
+import com.example.travelpal.ui.util.BitmapConverter
 
 class TravelAdapter(
     private val onClick: (TravelEntity) -> Unit
@@ -37,11 +38,16 @@ class TravelViewHolder(
     private val binding: ItemTripBinding
 ) : RecyclerView.ViewHolder(binding.root) {
     fun bind(item: TravelEntity, onClick: (TravelEntity) -> Unit) {
-
-        binding.ivTripThumbnail.load(item.coverUrl) {
-            crossfade(true)
-            placeholder(R.drawable.ic_launcher_background)
-            transformations(RoundedCornersTransformation(16f))
+        if (item.mapThumbnail != null) {
+            binding.ivTripThumbnail.load(BitmapConverter().byteArrayToBitmap(item.mapThumbnail!!)) {
+                crossfade(true)
+                transformations(RoundedCornersTransformation(16f))
+            }
+        } else {
+            binding.ivTripThumbnail.load(R.drawable.baseline_image_24) {
+                crossfade(true)
+                transformations(RoundedCornersTransformation(16f))
+            }
         }
 
         binding.tvDescription.text = item.description

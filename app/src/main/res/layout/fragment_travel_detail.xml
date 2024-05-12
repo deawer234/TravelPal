@@ -26,7 +26,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            app:layout_constraintTop_toBottomOf="@id/ivMapThumbnail"
+            app:layout_constraintTop_toBottomOf="@id/mapCardView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -70,15 +70,24 @@
             app:layout_constraintRight_toRightOf="parent"
             />
 
-        <com.google.android.gms.maps.MapView
-            android:id="@+id/ivMapThumbnail"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/mapCardView"
             android:layout_width="0dp"
             android:layout_height="200dp"
             android:layout_margin="16dp"
-            android:contentDescription="@string/map_thumbnail"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="8dp"
             app:layout_constraintTop_toBottomOf="@id/tvDestinationName"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.gms.maps.MapView
+                android:id="@+id/ivMapThumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/map_thumbnail" />
+
+        </androidx.cardview.widget.CardView>
 
         <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/elevationChart"

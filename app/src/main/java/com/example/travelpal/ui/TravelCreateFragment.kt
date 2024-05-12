@@ -17,6 +17,7 @@ import com.example.travelpal.data.TravelEntity
 import com.example.travelpal.databinding.FragmentTravelCreateBinding
 import com.example.travelpal.repository.TravelRepository
 import com.example.travelpal.ui.service.TrackerService
+import java.util.Calendar
 
 
 class TravelCreateFragment : Fragment() {
@@ -51,6 +52,13 @@ class TravelCreateFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val calendar = Calendar.getInstance()
+        binding.etDate.init(
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH),
+            null
+        )
 
         binding.btnSave.setOnClickListener {
             when {
@@ -100,7 +108,10 @@ class TravelCreateFragment : Fragment() {
 
     private fun saveTravelEntity() {
         val destinationName = binding.etDestinationName.text.toString()
-        val date = binding.etDate.text.toString()
+        val date = binding.etDate.dayOfMonth.toString() + "/" +
+                binding.etDate.month.toString() + "/" +
+                binding.etDate.year.toString()
+
         val description = binding.etDescription.text.toString()
 
         if (destinationName.isNotEmpty() && date.isNotEmpty() && description.isNotEmpty()) {
@@ -109,18 +120,16 @@ class TravelCreateFragment : Fragment() {
                 destinationName = destinationName,
                 date = date,
                 description = description,
-                coverUrl = null
+                mapThumbnail = null
             )
             val id = travelRepository.createTravel(travelEntity)
             val travelEntityCreated = travelRepository.getTravelById(id)
 
-            println("BEFORE TRACKING")
             Intent(requireActivity().applicationContext, TrackerService::class.java).apply {
                 action = TrackerService.ACTION_START
                 putExtra("travelEntityId", id)
                 requireActivity().startService(this)
             }
-            println("STARTED TRACKING")
 
             findNavController().navigate(
                 TravelCreateFragmentDirections.actionCreateTravelFragmentToTravelLivetrackingFragment(

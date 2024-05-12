@@ -71,7 +71,6 @@ class TravelListFragment : Fragment() {
     }
 
     // Sliding delete magic
-
     private val itemTouchHelperCallback =
         object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(
