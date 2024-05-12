@@ -19,8 +19,8 @@ class StepCounter(context: Context) : SensorEventListener {
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_STEP_COUNTER) {
             val stepsSinceBoot = event.values[0].toInt()
+            if (previousStepCount == 0) previousStepCount = stepsSinceBoot
             stepCount = stepsSinceBoot - previousStepCount
-            previousStepCount = stepsSinceBoot
         }
 
     }
@@ -30,5 +30,10 @@ class StepCounter(context: Context) : SensorEventListener {
 
     fun getStepCount(): Int{
         return stepCount
+    }
+
+    fun startTrackingSteps() {
+        previousStepCount = 0
+        stepCount = 0
     }
 }

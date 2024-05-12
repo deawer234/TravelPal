@@ -82,7 +82,7 @@ class Chart{
             isEnabled = true
             setDrawGridLines(false)  // Disable grid lines
             setDrawAxisLine(false)  // Disable axis line
-            setLabelCount(2, true)  // Set the number of labels
+            setLabelCount(2, false)  // Set the number of labels
             textColor = Color.BLACK  // Set the color of the labels to black
             valueFormatter = MaxMinValueFormatter(max, min)
         }
