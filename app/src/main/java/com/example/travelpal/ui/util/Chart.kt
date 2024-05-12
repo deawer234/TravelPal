@@ -2,17 +2,11 @@ package com.example.travelpal.ui.util
 
 import android.graphics.Color
 import com.example.travelpal.data.Location
-import com.example.travelpal.repository.LocationRepository
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
 class Chart{
     var max = 0
     var min = 0
@@ -79,19 +73,6 @@ class Chart{
         chart.setBackgroundColor(Color.WHITE)
 
         chart.description.isEnabled = false
-
-
-//        chart.xAxis.apply {
-//            isEnabled = true
-//            setDrawGridLines(false)
-//            setDrawAxisLine(false)
-//            setDrawLabels(false)
-//            axisMaximum = max.toFloat()
-//            axisMinimum = min.toFloat()
-//            textColor = Color.BLACK
-//            valueFormatter = MaxMinValueFormatter(max, min)
-//        }
-
 
         chart.xAxis.isEnabled = false
 
