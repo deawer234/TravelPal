@@ -8,9 +8,12 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 class Chart{
-    var max = 0
-    var min = 0
+    var max = 0.0f
+    var min = 0.0f
     fun getElevationChartData(chart: LineChart, locations: List<Location>){
+        max = locations.maxOf { it.elevation.toFloat() }
+        min = locations.minOf { it.elevation.toFloat() }
+
         setupChart(chart)
         val entries = locations.mapIndexed { index, location ->
             Entry(index.toFloat(), location.elevation.toFloat())
@@ -24,8 +27,6 @@ class Chart{
         dataSet.fillColor = Color.BLUE  // Set the fill color below the line to light gray
         dataSet.setDrawFilled(true)  // Enable fill color below the line
 
-        max = locations.maxOf { it.elevation.toInt() }
-        min = locations.minOf { it.elevation.toInt() }
 
         chart.data = LineData(dataSet)
         chart.animateX(1500)
@@ -33,6 +34,9 @@ class Chart{
     }
 
     fun getTraveledChartData(chart: LineChart, locations: List<Location>){
+        max = locations.maxOf { it.traveled}
+        min = locations.minOf { it.traveled }
+
         setupChart(chart)
         val entries = locations.mapIndexed { index, location ->
             Entry(index.toFloat(), location.traveled)
@@ -82,7 +86,7 @@ class Chart{
             isEnabled = true
             setDrawGridLines(false)  // Disable grid lines
             setDrawAxisLine(false)  // Disable axis line
-            setLabelCount(2, false)  // Set the number of labels
+            setLabelCount(2, true)
             textColor = Color.BLACK  // Set the color of the labels to black
             valueFormatter = MaxMinValueFormatter(max, min)
         }
@@ -93,11 +97,14 @@ class Chart{
 
 }
 
-class MaxMinValueFormatter(private val max: Int, private val min: Int) : ValueFormatter() {
+class MaxMinValueFormatter(private val max: Float, private val min: Float, val tolerance: Float = 10f) : ValueFormatter() {
     override fun getFormattedValue(value: Float): String {
-        return when (value.toInt()) {
-            max -> max.toString()
-            min -> min.toString()
+        println(value)
+        println(max)
+        println(min)
+        return when {
+            value >= max - tolerance -> String.format("%d", max.toInt())
+            value <= min + tolerance -> String.format("%d", min.toInt())
             else -> ""
         }
     }

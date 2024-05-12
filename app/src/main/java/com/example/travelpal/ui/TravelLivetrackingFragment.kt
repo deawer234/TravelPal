@@ -52,15 +52,15 @@ class TravelLivetrackingFragment : Fragment() {
             }
 
             trackerService?.totalDistanceData?.observe(viewLifecycleOwner) { totalDistance ->
-                binding.distance.text = totalDistance.toString()
+                binding.distance.text = "%.2f km".format(totalDistance/1000)
             }
 
-            trackerService?.averageSpeedData?.observe(viewLifecycleOwner) { averageSpeed ->
-                binding.speed.text = averageSpeed.toString()
+            trackerService?.averageSpeedData?.observe(viewLifecycleOwner) { speed ->
+                binding.speed.text = "%.2f km/h".format(speed*3.6)
             }
 
             trackerService?.lastAltitudeData?.observe(viewLifecycleOwner) { lastAltitude ->
-                binding.elevation.text = lastAltitude.toString()
+                binding.elevation.text = "%.2f m".format(lastAltitude)
             }
 
             trackerService?.locationsData?.observe(viewLifecycleOwner) { location ->

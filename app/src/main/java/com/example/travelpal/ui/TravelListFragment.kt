@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.travelpal.R
 import com.example.travelpal.databinding.FragmentTravelListBinding
+import com.example.travelpal.repository.LocationRepository
 import com.example.travelpal.repository.TravelRepository
 import com.example.travelpal.ui.adapter.TravelAdapter
 import com.google.android.material.snackbar.Snackbar
@@ -27,6 +28,10 @@ class TravelListFragment : Fragment() {
 
     private val travelRepository: TravelRepository by lazy {
         TravelRepository(requireContext())
+    }
+
+    private val locationRepository: LocationRepository by lazy {
+        LocationRepository(requireContext())
     }
 
     private val adapter = TravelAdapter(
@@ -66,7 +71,6 @@ class TravelListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-
         adapter.submitList(travelRepository.getAllTravels())
     }
 

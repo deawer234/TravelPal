@@ -17,7 +17,10 @@ import com.example.travelpal.data.TravelEntity
 import com.example.travelpal.databinding.FragmentTravelCreateBinding
 import com.example.travelpal.repository.TravelRepository
 import com.example.travelpal.ui.service.TrackerService
+import java.text.DateFormat
+import java.time.LocalDate
 import java.util.Calendar
+import java.util.Date
 
 
 class TravelCreateFragment : Fragment() {
@@ -51,14 +54,6 @@ class TravelCreateFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        val calendar = Calendar.getInstance()
-        binding.etDate.init(
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH),
-            null
-        )
 
         binding.btnSave.setOnClickListener {
             when {
@@ -108,17 +103,13 @@ class TravelCreateFragment : Fragment() {
 
     private fun saveTravelEntity() {
         val destinationName = binding.etDestinationName.text.toString()
-        val date = binding.etDate.dayOfMonth.toString() + "/" +
-                binding.etDate.month.toString() + "/" +
-                binding.etDate.year.toString()
-
         val description = binding.etDescription.text.toString()
 
-        if (destinationName.isNotEmpty() && date.isNotEmpty() && description.isNotEmpty()) {
+        if (destinationName.isNotEmpty() && description.isNotEmpty()) {
             //Temporary measure
             val travelEntity = TravelEntity(
                 destinationName = destinationName,
-                date = date,
+                date = Date().toString(),
                 description = description,
                 mapThumbnail = null
             )
@@ -136,7 +127,6 @@ class TravelCreateFragment : Fragment() {
                     travelEntityCreated
                 )
             )
-            // Navigate back or show a success message
         } else {
             // Show an error message indicating that all fields are required
         }
