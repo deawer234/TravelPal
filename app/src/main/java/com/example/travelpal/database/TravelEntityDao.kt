@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.example.travelpal.data.TravelEntity
 
 @Dao
@@ -15,6 +16,9 @@ interface TravelEntityDao {
 
     @Delete()
     fun deleteTravelData(travelEntity: TravelEntity)
+
+    @Update
+    fun updateTravelData(travelEntity: TravelEntity)
 
     @Query("SELECT * FROM TravelEntity")
     fun selectAllRoutes(): List<TravelEntity>

@@ -18,108 +18,144 @@
         app:layout_anchorGravity="top|center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:backgroundTint="@color/orange"/>
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/mapView"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_margin="16dp"
+    <TextView
+        android:id="@+id/travelName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="16dp"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
+        app:layout_constraintRight_toRightOf="parent" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/mapCard"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="8dp"
+        app:layout_constraintTop_toBottomOf="@id/travelName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.gms.maps.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/map_thumbnail" />
+
+    </androidx.cardview.widget.CardView>
 
     <!-- Steps Section -->
-    <TextView
-        android:id="@+id/stepsText"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/statsCard"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/steps"
-        android:layout_marginTop="32dp"
-        android:layout_marginStart="16dp"
-        android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-        app:layout_constraintTop_toBottomOf="@id/mapView"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/distanceText" />
+        android:layout_height="200dp"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="8dp"
+        app:layout_constraintTop_toBottomOf="@id/mapCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <TextView
-        android:id="@+id/steps"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginStart="16dp"
-        android:textAlignment="center"
-        app:layout_constraintTop_toBottomOf="@+id/stepsText"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/distanceText" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/stepsText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="32dp"
+                android:text="@string/steps"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/distanceText"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Distance Section -->
-    <TextView
-        android:id="@+id/distanceText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/distance"
-        android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintTop_toTopOf="@id/stepsText"
-        app:layout_constraintLeft_toRightOf="@id/stepsText"
-        app:layout_constraintRight_toRightOf="parent" />
+            <TextView
+                android:id="@+id/steps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="16dp"
+                android:textAlignment="center"
+                app:layout_constraintTop_toBottomOf="@+id/stepsText"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/distanceText" />
 
-    <TextView
-        android:id="@+id/distance"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintTop_toBottomOf="@+id/distanceText"
-        app:layout_constraintLeft_toRightOf="@id/stepsText"
-        app:layout_constraintRight_toRightOf="parent" />
+        <!-- Distance Section -->
+            <TextView
+                android:id="@+id/distanceText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/distance"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintTop_toTopOf="@id/stepsText"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintLeft_toRightOf="@id/stepsText"/>
 
-    <!-- Speed Section -->
-    <TextView
-        android:id="@+id/speedText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:text="@string/speed"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-        android:layout_marginTop="32dp"
-        android:layout_marginStart="16dp"
-        app:layout_constraintTop_toBottomOf="@id/steps"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/elevationText" />
+            <TextView
+                android:id="@+id/distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/distanceText"
+                app:layout_constraintLeft_toRightOf="@id/stepsText"
+                app:layout_constraintRight_toRightOf="parent" />
 
-    <TextView
-        android:id="@+id/speed"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/speedText"
-        app:layout_constraintLeft_toLeftOf="@id/speedText"
-        app:layout_constraintRight_toLeftOf="@id/elevationText" />
+        <!-- Speed Section -->
+        <TextView
+            android:id="@+id/speedText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:text="@string/speed"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+            android:layout_marginTop="32dp"
+            app:layout_constraintTop_toBottomOf="@id/steps"
+            app:layout_constraintLeft_toLeftOf="@id/stepsText"
+            />
 
-    <!-- Elevation Section -->
-    <TextView
-        android:id="@+id/elevationText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/elevation"
-        android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-        app:layout_constraintTop_toTopOf="@id/speedText"
-        app:layout_constraintLeft_toRightOf="@id/speedText"
-        app:layout_constraintRight_toRightOf="@id/distanceText" />
+        <TextView
+            android:id="@+id/speed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/speedText"
+            app:layout_constraintRight_toRightOf="@id/speedText"
+            app:layout_constraintLeft_toLeftOf="@id/speedText"
+            />
 
-    <TextView
-        android:id="@+id/elevation"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textAlignment="center"
-        app:layout_constraintLeft_toRightOf="@id/speedText"
-        app:layout_constraintRight_toRightOf="@id/elevationText"
-        app:layout_constraintTop_toBottomOf="@id/elevationText" />
+        <!-- Elevation Section -->
+        <TextView
+            android:id="@+id/elevationText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/elevation"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+            app:layout_constraintTop_toTopOf="@id/speedText"
+            app:layout_constraintRight_toRightOf="@id/distanceText" />
 
+        <TextView
+            android:id="@+id/elevation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textAlignment="center"
+            app:layout_constraintLeft_toLeftOf="@id/elevationText"
+            app:layout_constraintRight_toRightOf="@id/elevationText"
+            app:layout_constraintTop_toBottomOf="@id/elevationText" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

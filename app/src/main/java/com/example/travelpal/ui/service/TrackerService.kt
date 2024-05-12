@@ -22,6 +22,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class TrackerService : Service() {
@@ -84,6 +85,13 @@ class TrackerService : Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
+    private fun startTimer(){
+        startTime = System.currentTimeMillis()
+        CoroutineScope(Dispatchers.Main).launch {
+
+        }
+    }
+
     private fun start() {
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -110,7 +118,6 @@ class TrackerService : Service() {
                 if (startingLocation == null) {
                     startingLocation = it
                     lastLocation = it
-                    startTime = System.currentTimeMillis()
                 }
                 stepCountData.postValue(stepCounter.getStepCount())
 
