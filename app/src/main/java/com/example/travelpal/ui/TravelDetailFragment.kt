@@ -24,13 +24,20 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.coroutines.launch
-import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
+import android.widget.Toolbar
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.findNavController
 import com.example.travelpal.R
@@ -166,13 +173,13 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
 
         val averageSpeedText = "Average speed: %.2f km/h".format(average*3.6)
         val distanceTraveledText = "Distance traveled: %.2f km".format(locations.last().traveled/1000)
+        val totalTime = (locations.last().visitDate.toLong() - locations.first().visitDate.toLong())/1000
+
         binding.averageSpeed.text = averageSpeedText
         binding.distanceTraveled.text = distanceTraveledText
-
         binding.steps.text = "Steps: ${locations.last().steps}"
-
-        val totalTime = (locations.last().visitDate.toLong() - locations.first().visitDate.toLong())/1000
         binding.totalTime.text = "Total time: ${totalTime/360}Hours ${totalTime%360}Minutes ${totalTime%60}Seconds"
+
         val chart = Chart()
         lifecycleScope.launch {
             chart.getElevationChartData(binding.elevationChart, locations)
@@ -203,16 +210,6 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
                 )
             )
         )
-        locations.firstOrNull()?.let {
-            googleMap.moveCamera(
-                CameraUpdateFactory.newLatLngZoom(
-                    LatLng(
-                        it.latitude,
-                        it.longitude
-                    ), 10f
-                )
-            )
-        }
         val polylineOptions =
             PolylineOptions().addAll(latLngList).color(Color.RED).width(8f)
         googleMap.addPolyline(polylineOptions)
@@ -248,9 +245,6 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         private const val REQUEST_THUMBNAIL = 103
         private const val REQUEST_PICK_IMAGE = 102
     }
-
-
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
