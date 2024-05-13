@@ -7,17 +7,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isEmpty
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.travelpal.R
 import com.example.travelpal.databinding.FragmentTravelListBinding
-import com.example.travelpal.repository.LocationRepository
 import com.example.travelpal.repository.TravelRepository
 import com.example.travelpal.ui.adapter.TravelAdapter
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -28,10 +30,6 @@ class TravelListFragment : Fragment() {
 
     private val travelRepository: TravelRepository by lazy {
         TravelRepository(requireContext())
-    }
-
-    private val locationRepository: LocationRepository by lazy {
-        LocationRepository(requireContext())
     }
 
     private val adapter = TravelAdapter(
@@ -71,7 +69,13 @@ class TravelListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        adapter.submitList(travelRepository.getAllTravels())
+        val travelList = travelRepository.getAllTravels()
+        adapter.submitList(travelList)
+        if (travelList.isEmpty()) {
+            binding.emptyTextView.visibility = View.VISIBLE
+        } else {
+            binding.emptyTextView.visibility = View.GONE
+        }
     }
 
     // Sliding delete magic
@@ -92,17 +96,25 @@ class TravelListFragment : Fragment() {
                 val newList = adapter.currentList.toMutableList().apply { removeAt(position) }
                 adapter.submitList(newList)
 
-                // Show the Snackbar with the UNDO option
                 Snackbar.make(binding.rvTravelEntries, "Item deleted", Snackbar.LENGTH_LONG).apply {
                     setAction("UNDO") {
                         newList.add(position, item)
                         adapter.submitList(newList.toList())
                         adapter.notifyItemInserted(position)
                     }
+
+
                     addCallback(object : Snackbar.Callback() {
                         override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                             if (event != DISMISS_EVENT_ACTION) {
-                                travelRepository.deleteTravel(item)
+                                lifecycleScope.launch {
+                                    travelRepository.deleteTravel(item)
+                                    if (binding.rvTravelEntries.isEmpty()) {
+                                        binding.emptyTextView.visibility = View.VISIBLE
+                                    } else {
+                                        binding.emptyTextView.visibility = View.GONE
+                                    }
+                                }
                             }
                         }
                     })

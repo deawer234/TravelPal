@@ -65,4 +65,14 @@
     <string name="endTracking">End tracking</string>
     <string name="trip_name">Trip Name</string>
     <string name="short_description_of_the_trip">Short description of the trip</string>
+    <string name="_0_km">0 km</string>
+    <string name="_0">0</string>
+    <string name="_0_km_h">0 km/h</string>
+    <string name="_0_m">0 m</string>
+    <string name="_00_00_00">00:00:00</string>
+    <string name="set_thumbnail">Set thumbnail</string>
+    <string name="change_title">Change title</string>
+    <string name="change_description">Change description</string>
+    <string name="title">Title</string>
+    <string name="you_don_t_have_any_entries_yet_n_n_click_on_and_start_tracking">You don\'t have any entries yet :( \n\n Click on + and start tracking!</string>
 </resources>

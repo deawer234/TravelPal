@@ -1,14 +1,14 @@
 package com.example.travelpal.ui.service
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Binder
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
@@ -22,8 +22,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlin.random.Random
 
 class TrackerService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -34,24 +32,29 @@ class TrackerService : Service() {
 
     private var totalDistance = 0f
     private var startTime = 0L
-    private var totalTime = 0L
+    private val handler = Handler(Looper.getMainLooper())
+    private lateinit var timeUpdateRunnable: Runnable
+
 
     private var travelEntityId = -1L
 
     private lateinit var lastLocation: Location
     private var startingLocation: Location? = null
 
-    val stepCountData = MutableLiveData<Int>()
-    val totalDistanceData = MutableLiveData<Float>()
-    val averageSpeedData = MutableLiveData<Float>()
-    val lastAltitudeData = MutableLiveData<Double>()
 
     val locationsData = MutableLiveData<Location>()
 
     private val binder = LocalBinder()
+
     inner class LocalBinder : Binder() {
         fun getService(): TrackerService = this@TrackerService
     }
+
+    val timeRunInSeconds = MutableLiveData<Long>()
+    val stepCountData = MutableLiveData<Int>()
+    val totalDistanceData = MutableLiveData<Float>()
+    val averageSpeedData = MutableLiveData<Float>()
+    val lastAltitudeData = MutableLiveData<Double>()
 
     companion object {
         const val ACTION_START = "ACTION_START"
@@ -85,13 +88,6 @@ class TrackerService : Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun startTimer(){
-        startTime = System.currentTimeMillis()
-        CoroutineScope(Dispatchers.Main).launch {
-
-        }
-    }
-
     private fun start() {
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -105,6 +101,20 @@ class TrackerService : Service() {
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
         }
+
+        startTime = System.currentTimeMillis()
+
+        timeUpdateRunnable = Runnable {
+            val elapsedTime = getElapsedTimeInSeconds()
+            timeRunInSeconds.postValue(elapsedTime)
+            // Update the UI with the formatted time
+            // Replace "timeTextView" with the ID of your TextView
+
+            // Post the Runnable again with a delay of 1 second
+            handler.postDelayed(timeUpdateRunnable, 1000)
+        }
+
+        handler.post(timeUpdateRunnable)
 
         stepCounter.startTrackingSteps()
 
@@ -142,11 +152,17 @@ class TrackerService : Service() {
 
     }
 
+    @Suppress("DEPRECATION")
     private fun stop() {
         stopForeground(true)
+        handler.removeCallbacks(timeUpdateRunnable)
         stopSelf()
     }
 
+    private fun getElapsedTimeInSeconds(): Long {
+        val elapsedTimeMillis = System.currentTimeMillis() - startTime
+        return elapsedTimeMillis / 1000
+    }
 
     override fun onDestroy() {
         super.onDestroy()

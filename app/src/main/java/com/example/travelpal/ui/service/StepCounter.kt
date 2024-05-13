@@ -7,8 +7,10 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 
 class StepCounter(context: Context) : SensorEventListener {
-    private var sensorManager: SensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    private var stepCounterSensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+    private var sensorManager: SensorManager =
+        context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    private var stepCounterSensor: Sensor? =
+        sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
     private var stepCount = 0
     private var previousStepCount = 0
 
@@ -28,7 +30,7 @@ class StepCounter(context: Context) : SensorEventListener {
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
     }
 
-    fun getStepCount(): Int{
+    fun getStepCount(): Int {
         return stepCount
     }
 

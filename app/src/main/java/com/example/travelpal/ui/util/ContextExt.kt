@@ -1,3 +1,5 @@
+package com.example.travelpal.ui.util
+
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager

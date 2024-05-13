@@ -14,7 +14,7 @@ interface TravelEntityDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun persistTravelData(travelEntity: TravelEntity): Long
 
-    @Delete()
+    @Delete
     fun deleteTravelData(travelEntity: TravelEntity)
 
     @Update

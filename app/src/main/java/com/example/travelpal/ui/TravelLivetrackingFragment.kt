@@ -4,7 +4,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
 import android.os.IBinder
@@ -25,8 +24,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
 
 class TravelLivetrackingFragment : Fragment() {
     private val args: TravelLivetrackingFragmentArgs by navArgs()
@@ -52,15 +49,25 @@ class TravelLivetrackingFragment : Fragment() {
             }
 
             trackerService?.totalDistanceData?.observe(viewLifecycleOwner) { totalDistance ->
-                binding.distance.text = "%.2f km".format(totalDistance/1000)
+                val text = "%.2f km".format(totalDistance / 1000)
+                binding.distance.text = text
             }
 
             trackerService?.averageSpeedData?.observe(viewLifecycleOwner) { speed ->
-                binding.speed.text = "%.2f km/h".format(speed*3.6)
+                val text = "%.2f km/h".format(speed * 3.6)
+                binding.speed.text = text
             }
 
             trackerService?.lastAltitudeData?.observe(viewLifecycleOwner) { lastAltitude ->
-                binding.elevation.text = "%.2f m".format(lastAltitude)
+                val text = "%.2f m".format(lastAltitude)
+                binding.elevation.text = text
+            }
+
+            trackerService?.timeRunInSeconds?.observe(viewLifecycleOwner) { timeInSeconds ->
+                val hours = timeInSeconds / 3600
+                val minutes = (timeInSeconds % 3600) / 60
+                val seconds = timeInSeconds % 60
+                binding.stopwatch.text = String.format("%02d:%02d:%02d", hours, minutes, seconds)
             }
 
             trackerService?.locationsData?.observe(viewLifecycleOwner) { location ->
@@ -86,7 +93,7 @@ class TravelLivetrackingFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        binding.travelName.text = args.travelEntity.destinationName
         binding.stopTracking.setOnClickListener {
             Intent(requireActivity().applicationContext, TrackerService::class.java).apply {
                 action = TrackerService.ACTION_STOP
@@ -94,10 +101,10 @@ class TravelLivetrackingFragment : Fragment() {
                 requireActivity().startService(this)
             }
             googleMap?.addMarker(
-                MarkerOptions().position( pathPoints.first())
+                MarkerOptions().position(pathPoints.first())
             )
             googleMap?.addMarker(
-                MarkerOptions().position( pathPoints.last())
+                MarkerOptions().position(pathPoints.last())
             )
             googleMap?.snapshot { bitmap ->
                 val travelEntity = args.travelEntity
@@ -117,7 +124,7 @@ class TravelLivetrackingFragment : Fragment() {
     }
 
     private fun moveCameraToUser() {
-        if(pathPoints.isNotEmpty()) {
+        if (pathPoints.isNotEmpty()) {
             googleMap?.animateCamera(
                 CameraUpdateFactory.newLatLngZoom(
                     pathPoints.last(),
@@ -136,7 +143,7 @@ class TravelLivetrackingFragment : Fragment() {
     }
 
     private fun addLatestPolyline() {
-        if(pathPoints.isNotEmpty() && pathPoints.size > 1) {
+        if (pathPoints.isNotEmpty() && pathPoints.size > 1) {
             val preLastPoint = pathPoints[pathPoints.size - 2]
             val lastPoint = pathPoints.last()
             val polylineOptions = PolylineOptions()

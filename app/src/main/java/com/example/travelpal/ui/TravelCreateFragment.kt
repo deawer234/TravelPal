@@ -3,6 +3,7 @@ package com.example.travelpal.ui
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,9 +18,6 @@ import com.example.travelpal.data.TravelEntity
 import com.example.travelpal.databinding.FragmentTravelCreateBinding
 import com.example.travelpal.repository.TravelRepository
 import com.example.travelpal.ui.service.TrackerService
-import java.text.DateFormat
-import java.time.LocalDate
-import java.util.Calendar
 import java.util.Date
 
 
@@ -38,7 +36,7 @@ class TravelCreateFragment : Fragment() {
         return binding.root
     }
 
-    val permissionLauncher = registerForActivityResult(
+    private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
@@ -88,13 +86,15 @@ class TravelCreateFragment : Fragment() {
                 }
 
                 else -> {
-                    permissionLauncher.launch(
-                        arrayOf(
-                            Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION,
-                            Manifest.permission.ACTIVITY_RECOGNITION
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        permissionLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION,
+                                Manifest.permission.ACTIVITY_RECOGNITION
+                            )
                         )
-                    )
+                    }
                 }
             }
         }

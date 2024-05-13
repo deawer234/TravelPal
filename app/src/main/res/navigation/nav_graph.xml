@@ -41,7 +41,7 @@
     <fragment
         android:id="@+id/travelLivetrackingFragment"
         android:name="com.example.travelpal.ui.TravelLivetrackingFragment"
-        android:label="TravelLivetrackingFragment" >
+        android:label="Your position is being tracked" >
         <action
             android:id="@+id/action_travelLivetrackingFragment_to_travelListFragment"
             app:destination="@id/travelListFragment" />

@@ -1,19 +1,31 @@
 package com.example.travelpal.ui
 
+import android.Manifest
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.travelpal.R
 import com.example.travelpal.data.Location
+import com.example.travelpal.data.Photo
+import com.example.travelpal.databinding.DialogUpdateBinding
 import com.example.travelpal.databinding.FragmentTravelDetailBinding
 import com.example.travelpal.repository.LocationRepository
 import com.example.travelpal.repository.PhotoRepository
-import com.example.travelpal.ui.adapter.PhotoAdapter
+import com.example.travelpal.repository.TravelRepository
+import com.example.travelpal.ui.adapter.ImagesAdapter
+import com.example.travelpal.ui.util.BitmapConverter
 import com.example.travelpal.ui.util.Chart
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -23,38 +35,6 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.coroutines.launch
-import android.Manifest
-import android.app.Activity
-import android.app.AlertDialog
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.ImageDecoder
-import android.graphics.Matrix
-import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
-import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
-import androidx.navigation.fragment.findNavController
-import com.example.travelpal.R
-import com.example.travelpal.data.Photo
-import com.example.travelpal.data.TravelEntity
-import com.example.travelpal.repository.TravelRepository
-import com.example.travelpal.ui.adapter.ImagesAdapter
-import com.example.travelpal.ui.util.BitmapConverter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import okio.IOException
-import java.io.InputStream
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -66,9 +46,15 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var locations: List<Location>
 
-    private lateinit var imagesAdapter: ImagesAdapter
+    private lateinit var toolbar: Toolbar
 
-    private var imageList: MutableList<String> = mutableListOf()
+    private val imagesAdapter: ImagesAdapter = ImagesAdapter(
+        onDelete = { photo ->
+            lifecycleScope.launch {
+                photoRepository.deletePhoto(photo)
+            }
+        }
+    )
 
     private val photoRepository: PhotoRepository by lazy {
         PhotoRepository(requireContext())
@@ -91,40 +77,97 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
 
     }
 
+
+    private val requestPermissions =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                when {
+                    results[Manifest.permission.READ_MEDIA_IMAGES] == true && results[Manifest.permission.READ_MEDIA_VIDEO] == true && results[Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED] == true -> {
+                        pickImagesLauncher.launch("image/*")
+                    }
+
+                    else -> {
+                        Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                when {
+                    results[Manifest.permission.READ_MEDIA_IMAGES] == true && results[Manifest.permission.READ_MEDIA_VIDEO] == true -> {
+                        pickImagesLauncher.launch("image/*")
+                    }
+
+                    else -> {
+                        Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }
+            } else {
+                when {
+                    results[Manifest.permission.READ_EXTERNAL_STORAGE] == true -> {
+                        pickImagesLauncher.launch("image/*")
+                    }
+
+                    else -> {
+                        Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }
+            }
+        }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
 
+        toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
         toolbar.menu.clear()
         toolbar.inflateMenu(R.menu.overflow_menu)
         toolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_settings -> {
-                    openSetThumbnail()
+                    pickThumbnailLauncher.launch("image/*")
                     true
                 }
+
+                R.id.change_title -> {
+                    updateTitle()
+                    true
+                }
+
+                R.id.change_desc -> {
+                    updateDescription()
+                    true
+                }
+
                 else -> false
             }
         }
 
         locations = locationRepository.getAllTravelLocations(args.travelEntity.id)
-
-//        val photos = photoRepository.getAllPhotosForTravel(args.travelEntity.id)
-//        binding.photosRecyclerView.apply {
-//            layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
-//            adapter = PhotoAdapter(requireContext(), photos)
-//        }
-
-        imagesAdapter = ImagesAdapter(imageList)
-        binding.photosRecyclerView.apply {
-            layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
-            adapter = imagesAdapter
-        }
+        binding.photosRecyclerView.layoutManager =
+            LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
+        binding.photosRecyclerView.adapter = imagesAdapter
 
         binding.addImg.setOnClickListener {
-            openGalleryToSelectImages()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                requestPermissions.launch(
+                    arrayOf(
+                        Manifest.permission.READ_MEDIA_IMAGES,
+                        Manifest.permission.READ_MEDIA_VIDEO,
+                        Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+                    )
+                )
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requestPermissions.launch(
+                    arrayOf(
+                        Manifest.permission.READ_MEDIA_IMAGES,
+                        Manifest.permission.READ_MEDIA_VIDEO
+                    )
+                )
+            } else {
+                requestPermissions.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
+            }
         }
-
 
         binding.ivMapThumbnail.onCreate(savedInstanceState)
         binding.ivMapThumbnail.getMapAsync(this)
@@ -138,20 +181,61 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         }
         average /= locations.size
 
-        val averageSpeedText = "Average speed: %.2f km/h".format(average*3.6)
-        val distanceTraveledText = "Distance traveled: %.2f km".format(locations.last().traveled/1000)
+        val averageSpeedText = "Average speed: %.2f km/h".format(average * 3.6)
+        val distanceTraveledText =
+            "Distance traveled: %.2f km".format(locations.last().traveled / 1000)
+        val totalTime =
+            (locations.last().visitDate.toLong() - locations.first().visitDate.toLong()) / 1000
+        val steps = "Steps: ${locations.last().steps}"
+        val hours = totalTime / 3600
+        val minutes = (totalTime % 3600) / 60
+        val seconds = totalTime % 60
+        val timeText = "Total time: $hours Hours $minutes Minutes $seconds Seconds"
+        binding.totalTime.text = timeText
         binding.averageSpeed.text = averageSpeedText
         binding.distanceTraveled.text = distanceTraveledText
+        binding.steps.text = steps
 
-        binding.steps.text = "Steps: ${locations.last().steps}"
 
-        val totalTime = (locations.last().visitDate.toLong() - locations.first().visitDate.toLong())/1000
-        binding.totalTime.text = "Total time: ${totalTime/360}Hours ${totalTime%360}Minutes ${totalTime%60}Seconds"
         val chart = Chart()
         lifecycleScope.launch {
             chart.getElevationChartData(binding.elevationChart, locations)
         }
-        loadPhotos()
+    }
+
+    private fun showUpdateDialog(currentText: String, onUpdate: (String) -> Unit) {
+        val dialogBinding = DialogUpdateBinding.inflate(LayoutInflater.from(context))
+        dialogBinding.editText.setText(currentText)
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Update Text")
+            .setView(dialogBinding.root)
+            .setPositiveButton("Save") { _, _ ->
+                val newText = dialogBinding.editText.text.toString()
+                onUpdate(newText)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun updateTitle() {
+        showUpdateDialog(args.travelEntity.destinationName) { newTitle ->
+            lifecycleScope.launch {
+                val updatedTravelEntity = args.travelEntity.copy(destinationName = newTitle)
+                travelRepository.updateTravel(updatedTravelEntity)
+            }
+            binding.tvDestinationName.text = newTitle
+        }
+    }
+
+    private fun updateDescription() {
+        showUpdateDialog(args.travelEntity.description) { newDescription ->
+            lifecycleScope.launch {
+                val updatedTravelEntity = args.travelEntity.copy(description = newDescription)
+                travelRepository.updateTravel(updatedTravelEntity)
+            }
+            binding.tvDescription.text = newDescription
+        }
     }
 
 
@@ -177,16 +261,6 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
                 )
             )
         )
-        locations.firstOrNull()?.let {
-            googleMap.moveCamera(
-                CameraUpdateFactory.newLatLngZoom(
-                    LatLng(
-                        it.latitude,
-                        it.longitude
-                    ), 10f
-                )
-            )
-        }
         val polylineOptions =
             PolylineOptions().addAll(latLngList).color(Color.RED).width(8f)
         googleMap.addPolyline(polylineOptions)
@@ -201,102 +275,38 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         )
     }
 
-    private fun openGalleryToSelectImages() {
-        val intent = Intent(Intent.ACTION_PICK).apply {
-            type = "image/*"
-            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-        }
-        startActivityForResult(intent, REQUEST_PICK_IMAGE)
-    }
-
-    private fun openSetThumbnail(){
-        val intent = Intent(Intent.ACTION_PICK).apply {
-            type = "image/*"
-            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false) // Single selection
-        }
-        startActivityForResult(intent, REQUEST_THUMBNAIL)
-    }
-
-
-    companion object {
-        private const val REQUEST_THUMBNAIL = 103
-        private const val REQUEST_PICK_IMAGE = 102
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK && data != null) {
-            val clipData = data.clipData
+    private val pickImagesLauncher =
+        registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
             val photosToInsert = mutableListOf<Photo>()
-            if (clipData != null) {
-                for (i in 0 until clipData.itemCount) {
-                    val imageUri = clipData.getItemAt(i).uri
-                    val photo = Photo(
-                        travelEntryId = args.travelEntity.id,
-                        uri = imageUri.toString(),
-                        description = "",
-                        dateTaken = System.currentTimeMillis()
-                    )
-                    photosToInsert.add(photo)
-                }
-            } else if (data.data != null) {
-                val imageUri = data.data!!
+            uris.forEach { uri ->
                 val photo = Photo(
                     travelEntryId = args.travelEntity.id,
-                    uri = imageUri.toString(),
+                    uri = uri.toString(),
                     description = "",
                     dateTaken = System.currentTimeMillis()
                 )
                 photosToInsert.add(photo)
             }
-            photoRepository.insertPhotos(photosToInsert)
-            imageList.addAll(photosToInsert.map { it.uri })
-            imagesAdapter.notifyDataSetChanged()
-        } else if (requestCode == REQUEST_THUMBNAIL && resultCode == Activity.RESULT_OK && data != null) {
-            data.data?.let { uri ->
-                setThumbnail(uri)
+            lifecycleScope.launch {
+                photoRepository.insertPhotos(photosToInsert)
             }
         }
-    }
 
-    private fun setThumbnail(imageUri: Uri) {
-        lifecycleScope.launch {
-            try {
-                val bitmap = decodeUriToBitmap(imageUri)
-                val byteArray = BitmapConverter().bitmapToByteArray(bitmap)
-                args.travelEntity.mapThumbnail = byteArray
-                travelRepository.updateTravel(args.travelEntity)
-            } catch (e: Exception) {
-                Log.e("setThumbnail", "Error processing image", e)
-            }
-        }
-    }
-
-    private suspend fun decodeUriToBitmap(uri: Uri): Bitmap = withContext(Dispatchers.IO) {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                val source = ImageDecoder.createSource(requireActivity().contentResolver, uri)
-                ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
-                    decoder.setTargetSize(300, 300)
+    private val pickThumbnailLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            if (uri != null) {
+                lifecycleScope.launch {
+                    try {
+                        val bitmap = BitmapConverter().decodeUriToBitmap(uri, requireContext())
+                        val byteArray = BitmapConverter().bitmapToByteArray(bitmap)
+                        args.travelEntity.mapThumbnail = byteArray
+                        travelRepository.updateTravel(args.travelEntity)
+                    } catch (e: Exception) {
+                        Log.e("setThumbnail", "Error processing image", e)
+                    }
                 }
-            } else {
-                @Suppress("DEPRECATION")
-                MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, uri)
             }
-        } catch (e: IOException) {
-            throw RuntimeException("Failed to decode Uri to Bitmap.", e)
         }
-    }
-
-    private fun loadPhotos() {
-        lifecycleScope.launch {
-            val photos = photoRepository.getAllPhotosForTravel(args.travelEntity.id)
-            imageList.clear()
-            imageList.addAll(photos.map { it.uri })
-            imagesAdapter.notifyDataSetChanged()
-        }
-    }
-
 
 
     override fun onStart() {
@@ -307,11 +317,13 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
 
     override fun onResume() {
         super.onResume()
+        imagesAdapter.submitList(photoRepository.getAllPhotosForTravel(args.travelEntity.id))
         binding.ivMapThumbnail.onResume()
     }
 
     override fun onStop() {
         super.onStop()
+        toolbar.menu.clear()
         binding.ivMapThumbnail.onStop()
     }
 

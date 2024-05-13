@@ -25,12 +25,10 @@ class TravelAdapter(
             )
         )
 
-
     override fun onBindViewHolder(holder: TravelViewHolder, position: Int) {
         val item = getItem(position)
         holder.bind(item, onClick)
     }
-
 }
 
 
@@ -59,6 +57,7 @@ class TravelViewHolder(
         }
     }
 
+
 }
 
 class TravelDiffUtil : DiffUtil.ItemCallback<TravelEntity>() {
@@ -68,6 +67,4 @@ class TravelDiffUtil : DiffUtil.ItemCallback<TravelEntity>() {
 
     override fun areContentsTheSame(oldItem: TravelEntity, newItem: TravelEntity): Boolean =
         oldItem == newItem
-
-
 }
