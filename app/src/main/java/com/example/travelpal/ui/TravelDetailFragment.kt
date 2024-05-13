@@ -105,7 +105,7 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         binding.steps.text = "Steps: ${locations.last().steps}"
 
         val totalTime = (locations.last().visitDate.toLong() - locations.first().visitDate.toLong())/1000
-        binding.totalTime.text = "Total time: ${totalTime}"
+        binding.totalTime.text = "Total time: ${totalTime/360}Hours ${totalTime%360}Minutes ${totalTime%60}Seconds"
         val chart = Chart()
         lifecycleScope.launch {
             chart.getElevationChartData(binding.elevationChart, locations)

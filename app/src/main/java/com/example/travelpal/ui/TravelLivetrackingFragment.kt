@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
 import android.os.IBinder
@@ -11,14 +12,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.travelpal.databinding.FragmentTravelLivetrackingBinding
+import com.example.travelpal.repository.TravelRepository
 import com.example.travelpal.ui.service.TrackerService
+import com.example.travelpal.ui.util.BitmapConverter
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
+import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 
 class TravelLivetrackingFragment : Fragment() {
     private val args: TravelLivetrackingFragmentArgs by navArgs()
@@ -28,6 +36,10 @@ class TravelLivetrackingFragment : Fragment() {
 
     private var googleMap: GoogleMap? = null
     private var pathPoints = mutableListOf<LatLng>()
+
+    private val travelRepository: TravelRepository by lazy {
+        TravelRepository(requireContext())
+    }
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -40,15 +52,15 @@ class TravelLivetrackingFragment : Fragment() {
             }
 
             trackerService?.totalDistanceData?.observe(viewLifecycleOwner) { totalDistance ->
-                binding.distance.text = totalDistance.toString()
+                binding.distance.text = "%.2f km".format(totalDistance/1000)
             }
 
-            trackerService?.averageSpeedData?.observe(viewLifecycleOwner) { averageSpeed ->
-                binding.speed.text = averageSpeed.toString()
+            trackerService?.averageSpeedData?.observe(viewLifecycleOwner) { speed ->
+                binding.speed.text = "%.2f km/h".format(speed*3.6)
             }
 
             trackerService?.lastAltitudeData?.observe(viewLifecycleOwner) { lastAltitude ->
-                binding.elevation.text = lastAltitude.toString()
+                binding.elevation.text = "%.2f m".format(lastAltitude)
             }
 
             trackerService?.locationsData?.observe(viewLifecycleOwner) { location ->
@@ -81,7 +93,20 @@ class TravelLivetrackingFragment : Fragment() {
                 putExtra("travelEntityId", args.travelEntity.id)
                 requireActivity().startService(this)
             }
-            findNavController().navigate(TravelLivetrackingFragmentDirections.actionTravelLivetrackingFragmentToTravelListFragment())
+            googleMap?.addMarker(
+                MarkerOptions().position( pathPoints.first())
+            )
+            googleMap?.addMarker(
+                MarkerOptions().position( pathPoints.last())
+            )
+            googleMap?.snapshot { bitmap ->
+                val travelEntity = args.travelEntity
+                travelEntity.mapThumbnail = BitmapConverter().bitmapToByteArray(bitmap!!)
+                lifecycleScope.launch {
+                    travelRepository.updateTravel(travelEntity)
+                    findNavController().navigate(TravelLivetrackingFragmentDirections.actionTravelLivetrackingFragmentToTravelListFragment())
+                }
+            }
         }
 
         binding.mapView.onCreate(savedInstanceState)
@@ -96,7 +121,7 @@ class TravelLivetrackingFragment : Fragment() {
             googleMap?.animateCamera(
                 CameraUpdateFactory.newLatLngZoom(
                     pathPoints.last(),
-                    10f
+                    17f
                 )
             )
         }

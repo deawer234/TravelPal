@@ -63,4 +63,6 @@
     <string name="distance">Distance:</string>
     <string name="speed">Speed:</string>
     <string name="endTracking">End tracking</string>
+    <string name="trip_name">Trip Name</string>
+    <string name="short_description_of_the_trip">Short description of the trip</string>
 </resources>

@@ -13,6 +13,10 @@ class TravelRepository (
         return travelEntityDao.persistTravelData(travelEntity)
     }
 
+    fun updateTravel(travelEntity: TravelEntity){
+        travelEntityDao.updateTravelData(travelEntity)
+    }
+
     fun deleteTravel(travelEntity: TravelEntity){
         travelEntityDao.deleteTravelData(travelEntity)
     }
