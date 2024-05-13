@@ -26,12 +26,35 @@ import kotlinx.coroutines.launch
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
+import android.graphics.Matrix
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.navigation.fragment.findNavController
+import com.example.travelpal.R
 import com.example.travelpal.data.Photo
+import com.example.travelpal.data.TravelEntity
+import com.example.travelpal.repository.TravelRepository
 import com.example.travelpal.ui.adapter.ImagesAdapter
+import com.example.travelpal.ui.util.BitmapConverter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okio.IOException
+import java.io.InputStream
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -54,6 +77,10 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         LocationRepository(requireContext())
     }
 
+    private val travelRepository: TravelRepository by lazy {
+        TravelRepository(requireContext())
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -66,6 +93,20 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
+
+        toolbar.menu.clear()
+        toolbar.inflateMenu(R.menu.overflow_menu)
+        toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_settings -> {
+                    openSetThumbnail()
+                    true
+                }
+                else -> false
+            }
+        }
+
         locations = locationRepository.getAllTravelLocations(args.travelEntity.id)
 
 //        val photos = photoRepository.getAllPhotosForTravel(args.travelEntity.id)
@@ -168,22 +209,19 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         startActivityForResult(intent, REQUEST_PICK_IMAGE)
     }
 
+    private fun openSetThumbnail(){
+        val intent = Intent(Intent.ACTION_PICK).apply {
+            type = "image/*"
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false) // Single selection
+        }
+        startActivityForResult(intent, REQUEST_THUMBNAIL)
+    }
+
+
     companion object {
-        private const val REQUEST_STORAGE_PERMISSION = 101
+        private const val REQUEST_THUMBNAIL = 103
         private const val REQUEST_PICK_IMAGE = 102
     }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_STORAGE_PERMISSION) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openGalleryToSelectImages()
-            } else {
-                Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -214,6 +252,39 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
             photoRepository.insertPhotos(photosToInsert)
             imageList.addAll(photosToInsert.map { it.uri })
             imagesAdapter.notifyDataSetChanged()
+        } else if (requestCode == REQUEST_THUMBNAIL && resultCode == Activity.RESULT_OK && data != null) {
+            data.data?.let { uri ->
+                setThumbnail(uri)
+            }
+        }
+    }
+
+    private fun setThumbnail(imageUri: Uri) {
+        lifecycleScope.launch {
+            try {
+                val bitmap = decodeUriToBitmap(imageUri)
+                val byteArray = BitmapConverter().bitmapToByteArray(bitmap)
+                args.travelEntity.mapThumbnail = byteArray
+                travelRepository.updateTravel(args.travelEntity)
+            } catch (e: Exception) {
+                Log.e("setThumbnail", "Error processing image", e)
+            }
+        }
+    }
+
+    private suspend fun decodeUriToBitmap(uri: Uri): Bitmap = withContext(Dispatchers.IO) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val source = ImageDecoder.createSource(requireActivity().contentResolver, uri)
+                ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+                    decoder.setTargetSize(300, 300)
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, uri)
+            }
+        } catch (e: IOException) {
+            throw RuntimeException("Failed to decode Uri to Bitmap.", e)
         }
     }
 
