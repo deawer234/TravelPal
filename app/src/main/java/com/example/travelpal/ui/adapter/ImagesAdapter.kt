@@ -33,6 +33,8 @@ class ImagesAdapter : ListAdapter<Photo, ImageViewHolder>(ImageDiffUtil()) {
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
 //        val uri = Uri.parse(images[position])
 //        Glide.with(holder.itemView.context).load(uri).into(holder.imageView)
+        val photo = getItem(position)
+        holder.bind(photo)
     }
 }
 
