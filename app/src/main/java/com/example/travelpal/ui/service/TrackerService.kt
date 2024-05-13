@@ -1,7 +1,5 @@
 package com.example.travelpal.ui.service
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -24,9 +22,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 class TrackerService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -41,7 +36,6 @@ class TrackerService : Service() {
     private lateinit var timeUpdateRunnable: Runnable
 
 
-
     private var travelEntityId = -1L
 
     private lateinit var lastLocation: Location
@@ -51,6 +45,7 @@ class TrackerService : Service() {
     val locationsData = MutableLiveData<Location>()
 
     private val binder = LocalBinder()
+
     inner class LocalBinder : Binder() {
         fun getService(): TrackerService = this@TrackerService
     }
@@ -91,13 +86,6 @@ class TrackerService : Service() {
             ACTION_STOP -> stop()
         }
         return super.onStartCommand(intent, flags, startId)
-    }
-
-    private fun startTimer(){
-        startTime = System.currentTimeMillis()
-        CoroutineScope(Dispatchers.Main).launch {
-
-        }
     }
 
     private fun start() {
@@ -164,6 +152,7 @@ class TrackerService : Service() {
 
     }
 
+    @Suppress("DEPRECATION")
     private fun stop() {
         stopForeground(true)
         handler.removeCallbacks(timeUpdateRunnable)

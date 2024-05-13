@@ -96,7 +96,6 @@ class TravelListFragment : Fragment() {
                 val newList = adapter.currentList.toMutableList().apply { removeAt(position) }
                 adapter.submitList(newList)
 
-                // Show the Snackbar with the UNDO option
                 Snackbar.make(binding.rvTravelEntries, "Item deleted", Snackbar.LENGTH_LONG).apply {
                     setAction("UNDO") {
                         newList.add(position, item)
@@ -110,9 +109,9 @@ class TravelListFragment : Fragment() {
                             if (event != DISMISS_EVENT_ACTION) {
                                 lifecycleScope.launch {
                                     travelRepository.deleteTravel(item)
-                                    if (binding.rvTravelEntries.isEmpty()){
+                                    if (binding.rvTravelEntries.isEmpty()) {
                                         binding.emptyTextView.visibility = View.VISIBLE
-                                    }else{
+                                    } else {
                                         binding.emptyTextView.visibility = View.GONE
                                     }
                                 }

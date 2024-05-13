@@ -1,23 +1,17 @@
 package com.example.travelpal.ui.adapter
 
-import android.net.Uri
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import com.bumptech.glide.Glide
-import com.example.travelpal.R
 import com.example.travelpal.data.Photo
-import com.example.travelpal.data.TravelEntity
 import com.example.travelpal.databinding.ImageItemBinding
-import com.example.travelpal.databinding.ItemTripBinding
 
-class ImagesAdapter(private val onDelete: (Photo) -> Unit) : ListAdapter<Photo, ImageViewHolder>(ImageDiffUtil()) {
+class ImagesAdapter(private val onDelete: (Photo) -> Unit) :
+    ListAdapter<Photo, ImageViewHolder>(ImageDiffUtil()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
         return ImageViewHolder(
@@ -35,7 +29,10 @@ class ImagesAdapter(private val onDelete: (Photo) -> Unit) : ListAdapter<Photo, 
     }
 }
 
-class ImageViewHolder(private val binding: ImageItemBinding, private val onDelete: (Photo) -> Unit) : RecyclerView.ViewHolder(binding.root) {
+class ImageViewHolder(
+    private val binding: ImageItemBinding,
+    private val onDelete: (Photo) -> Unit
+) : RecyclerView.ViewHolder(binding.root) {
     fun bind(item: Photo) {
         binding.imageView.load(item.uri)
         binding.imageView.setOnLongClickListener {
@@ -54,7 +51,7 @@ class ImageViewHolder(private val binding: ImageItemBinding, private val onDelet
 }
 
 
-class ImageDiffUtil : DiffUtil.ItemCallback<Photo>(){
+class ImageDiffUtil : DiffUtil.ItemCallback<Photo>() {
     override fun areItemsTheSame(oldItem: Photo, newItem: Photo): Boolean {
         return oldItem.id == newItem.id
     }

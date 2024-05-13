@@ -2,18 +2,30 @@ package com.example.travelpal.ui
 
 import android.Manifest
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.travelpal.R
 import com.example.travelpal.data.Location
+import com.example.travelpal.data.Photo
+import com.example.travelpal.databinding.DialogUpdateBinding
 import com.example.travelpal.databinding.FragmentTravelDetailBinding
 import com.example.travelpal.repository.LocationRepository
 import com.example.travelpal.repository.PhotoRepository
+import com.example.travelpal.repository.TravelRepository
+import com.example.travelpal.ui.adapter.ImagesAdapter
+import com.example.travelpal.ui.util.BitmapConverter
 import com.example.travelpal.ui.util.Chart
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -23,18 +35,6 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.coroutines.launch
-import android.os.Build
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.Toolbar
-import com.example.travelpal.R
-import com.example.travelpal.data.Photo
-import com.example.travelpal.databinding.DialogUpdateBinding
-import com.example.travelpal.repository.TravelRepository
-import com.example.travelpal.ui.adapter.ImagesAdapter
-import com.example.travelpal.ui.util.BitmapConverter
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -78,36 +78,43 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
     }
 
 
-    private val requestPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            when {
-                results[Manifest.permission.READ_MEDIA_IMAGES] == true && results[Manifest.permission.READ_MEDIA_VIDEO] == true && results[Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED] == true -> {
-                    pickImagesLauncher.launch("image/*")
+    private val requestPermissions =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                when {
+                    results[Manifest.permission.READ_MEDIA_IMAGES] == true && results[Manifest.permission.READ_MEDIA_VIDEO] == true && results[Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED] == true -> {
+                        pickImagesLauncher.launch("image/*")
+                    }
+
+                    else -> {
+                        Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT)
+                            .show()
+                    }
                 }
-                else -> {
-                    Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                when {
+                    results[Manifest.permission.READ_MEDIA_IMAGES] == true && results[Manifest.permission.READ_MEDIA_VIDEO] == true -> {
+                        pickImagesLauncher.launch("image/*")
+                    }
+
+                    else -> {
+                        Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT)
+                            .show()
+                    }
                 }
-            }
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            when {
-                results[Manifest.permission.READ_MEDIA_IMAGES] == true && results[Manifest.permission.READ_MEDIA_VIDEO] == true -> {
-                    pickImagesLauncher.launch("image/*")
-                }
-                else -> {
-                    Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
-                }
-            }
-        } else {
-            when {
-                results[Manifest.permission.READ_EXTERNAL_STORAGE] == true -> {
-                    pickImagesLauncher.launch("image/*")
-                }
-                else -> {
-                    Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
+            } else {
+                when {
+                    results[Manifest.permission.READ_EXTERNAL_STORAGE] == true -> {
+                        pickImagesLauncher.launch("image/*")
+                    }
+
+                    else -> {
+                        Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT)
+                            .show()
+                    }
                 }
             }
         }
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -121,27 +128,42 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
                     pickThumbnailLauncher.launch("image/*")
                     true
                 }
+
                 R.id.change_title -> {
                     updateTitle()
                     true
                 }
+
                 R.id.change_desc -> {
                     updateDescription()
                     true
                 }
+
                 else -> false
             }
         }
 
         locations = locationRepository.getAllTravelLocations(args.travelEntity.id)
-        binding.photosRecyclerView.layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
+        binding.photosRecyclerView.layoutManager =
+            LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
         binding.photosRecyclerView.adapter = imagesAdapter
 
         binding.addImg.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                requestPermissions.launch(arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED))
+                requestPermissions.launch(
+                    arrayOf(
+                        Manifest.permission.READ_MEDIA_IMAGES,
+                        Manifest.permission.READ_MEDIA_VIDEO,
+                        Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+                    )
+                )
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                requestPermissions.launch(arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO))
+                requestPermissions.launch(
+                    arrayOf(
+                        Manifest.permission.READ_MEDIA_IMAGES,
+                        Manifest.permission.READ_MEDIA_VIDEO
+                    )
+                )
             } else {
                 requestPermissions.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
             }
@@ -159,9 +181,11 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         }
         average /= locations.size
 
-        val averageSpeedText = "Average speed: %.2f km/h".format(average*3.6)
-        val distanceTraveledText = "Distance traveled: %.2f km".format(locations.last().traveled/1000)
-        val totalTime = (locations.last().visitDate.toLong() - locations.first().visitDate.toLong())/1000
+        val averageSpeedText = "Average speed: %.2f km/h".format(average * 3.6)
+        val distanceTraveledText =
+            "Distance traveled: %.2f km".format(locations.last().traveled / 1000)
+        val totalTime =
+            (locations.last().visitDate.toLong() - locations.first().visitDate.toLong()) / 1000
         val steps = "Steps: ${locations.last().steps}"
         val hours = totalTime / 3600
         val minutes = (totalTime % 3600) / 60
@@ -251,37 +275,38 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         )
     }
 
-    private val pickImagesLauncher = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
-        val photosToInsert = mutableListOf<Photo>()
-        uris.forEach { uri ->
-            val photo = Photo(
-                travelEntryId = args.travelEntity.id,
-                uri = uri.toString(),
-                description = "",
-                dateTaken = System.currentTimeMillis()
-            )
-            photosToInsert.add(photo)
-        }
-        lifecycleScope.launch {
-            photoRepository.insertPhotos(photosToInsert)
-        }
-    }
-
-    private val pickThumbnailLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) {
+    private val pickImagesLauncher =
+        registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
+            val photosToInsert = mutableListOf<Photo>()
+            uris.forEach { uri ->
+                val photo = Photo(
+                    travelEntryId = args.travelEntity.id,
+                    uri = uri.toString(),
+                    description = "",
+                    dateTaken = System.currentTimeMillis()
+                )
+                photosToInsert.add(photo)
+            }
             lifecycleScope.launch {
-                try {
-                    val bitmap = BitmapConverter().decodeUriToBitmap(uri, requireContext())
-                    val byteArray = BitmapConverter().bitmapToByteArray(bitmap)
-                    args.travelEntity.mapThumbnail = byteArray
-                    travelRepository.updateTravel(args.travelEntity)
-                } catch (e: Exception) {
-                    Log.e("setThumbnail", "Error processing image", e)
+                photoRepository.insertPhotos(photosToInsert)
+            }
+        }
+
+    private val pickThumbnailLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            if (uri != null) {
+                lifecycleScope.launch {
+                    try {
+                        val bitmap = BitmapConverter().decodeUriToBitmap(uri, requireContext())
+                        val byteArray = BitmapConverter().bitmapToByteArray(bitmap)
+                        args.travelEntity.mapThumbnail = byteArray
+                        travelRepository.updateTravel(args.travelEntity)
+                    } catch (e: Exception) {
+                        Log.e("setThumbnail", "Error processing image", e)
+                    }
                 }
             }
         }
-    }
-
 
 
     override fun onStart() {
