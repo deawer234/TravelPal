@@ -23,23 +23,19 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.coroutines.launch
-import android.graphics.Bitmap
-import android.graphics.ImageDecoder
-import android.net.Uri
 import android.os.Build
-import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
-import android.widget.Toolbar
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.Toolbar
 import com.example.travelpal.R
 import com.example.travelpal.data.Photo
+import com.example.travelpal.databinding.DialogUpdateBinding
 import com.example.travelpal.repository.TravelRepository
 import com.example.travelpal.ui.adapter.ImagesAdapter
 import com.example.travelpal.ui.util.BitmapConverter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import okio.IOException
+
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
  */
@@ -50,9 +46,15 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var locations: List<Location>
 
-    private val imagesAdapter: ImagesAdapter = ImagesAdapter()
+    private lateinit var toolbar: Toolbar
 
-    private var imageList: MutableList<String> = mutableListOf()
+    private val imagesAdapter: ImagesAdapter = ImagesAdapter(
+        onDelete = { photo ->
+            lifecycleScope.launch {
+                photoRepository.deletePhoto(photo)
+            }
+        }
+    )
 
     private val photoRepository: PhotoRepository by lazy {
         PhotoRepository(requireContext())
@@ -74,6 +76,7 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         return binding.root
 
     }
+
 
     private val requestPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -108,8 +111,8 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
 
+        toolbar = requireActivity().findViewById<Toolbar>(R.id.toolbar)
         toolbar.menu.clear()
         toolbar.inflateMenu(R.menu.overflow_menu)
         toolbar.setOnMenuItemClickListener { menuItem ->
@@ -118,12 +121,19 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
                     pickThumbnailLauncher.launch("image/*")
                     true
                 }
+                R.id.change_title -> {
+                    updateTitle()
+                    true
+                }
+                R.id.change_desc -> {
+                    updateDescription()
+                    true
+                }
                 else -> false
             }
         }
 
         locations = locationRepository.getAllTravelLocations(args.travelEntity.id)
-
         binding.photosRecyclerView.layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
         binding.photosRecyclerView.adapter = imagesAdapter
 
@@ -151,18 +161,57 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
 
         val averageSpeedText = "Average speed: %.2f km/h".format(average*3.6)
         val distanceTraveledText = "Distance traveled: %.2f km".format(locations.last().traveled/1000)
-        val totalTime = (locations.last().visitDate.toLong() - locations.first().visitDate.toLong())/1000
-
+        val totalTime = (locations.last().visitDate.toLong() - locations.first().visitDate.toLong())
+        val steps = "Steps: ${locations.last().steps}"
+        val hours = totalTime / 3600
+        val minutes = (totalTime % 3600) / 60
+        val seconds = totalTime % 60
+        val timeText = "Total time: $hours Hours $minutes Minutes $seconds Seconds"
+        binding.totalTime.text = timeText
         binding.averageSpeed.text = averageSpeedText
         binding.distanceTraveled.text = distanceTraveledText
-        binding.steps.text = "Steps: ${locations.last().steps}"
-        binding.totalTime.text = "Total time: ${totalTime/360}Hours ${totalTime%360}Minutes ${totalTime%60}Seconds"
+        binding.steps.text = steps
+
 
         val chart = Chart()
         lifecycleScope.launch {
             chart.getElevationChartData(binding.elevationChart, locations)
         }
-        //loadPhotos()
+    }
+
+    private fun showUpdateDialog(currentText: String, onUpdate: (String) -> Unit) {
+        val dialogBinding = DialogUpdateBinding.inflate(LayoutInflater.from(context))
+        dialogBinding.editText.setText(currentText)
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Update Text")
+            .setView(dialogBinding.root)
+            .setPositiveButton("Save") { _, _ ->
+                val newText = dialogBinding.editText.text.toString()
+                onUpdate(newText)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun updateTitle() {
+        showUpdateDialog(args.travelEntity.destinationName) { newTitle ->
+            lifecycleScope.launch {
+                val updatedTravelEntity = args.travelEntity.copy(destinationName = newTitle)
+                travelRepository.updateTravel(updatedTravelEntity)
+            }
+            binding.tvDestinationName.text = newTitle
+        }
+    }
+
+    private fun updateDescription() {
+        showUpdateDialog(args.travelEntity.description) { newDescription ->
+            lifecycleScope.launch {
+                val updatedTravelEntity = args.travelEntity.copy(description = newDescription)
+                travelRepository.updateTravel(updatedTravelEntity)
+            }
+            binding.tvDescription.text = newDescription
+        }
     }
 
 
@@ -202,30 +251,7 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         )
     }
 
-//    private fun openGalleryToSelectImages() {
-//        val intent = Intent(Intent.ACTION_PICK).apply {
-//            type = "image/*"
-//            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-//        }
-//        startActivityForResult(intent, REQUEST_PICK_IMAGE)
-//    }
-
-//    private fun openSetThumbnail(){
-//        val intent = Intent(Intent.ACTION_PICK).apply {
-//            type = "image/*"
-//            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false) // Single selection
-//        }
-//        startActivityForResult(intent, REQUEST_THUMBNAIL)
-//    }
-
-
-//    companion object {
-//        private const val REQUEST_THUMBNAIL = 103
-//        private const val REQUEST_PICK_IMAGE = 102
-//    }
-
     private val pickImagesLauncher = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
-        //openGalleryToSelectImages()
         val photosToInsert = mutableListOf<Photo>()
         uris.forEach { uri ->
             val photo = Photo(
@@ -239,16 +265,13 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         lifecycleScope.launch {
             photoRepository.insertPhotos(photosToInsert)
         }
-
-        //imageList.addAll(photosToInsert as Collection<Photo>)
-        //imagesAdapter.notifyDataSetChanged()
     }
 
     private val pickThumbnailLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
             lifecycleScope.launch {
                 try {
-                    val bitmap = decodeUriToBitmap(uri)
+                    val bitmap = BitmapConverter().decodeUriToBitmap(uri, requireContext())
                     val byteArray = BitmapConverter().bitmapToByteArray(bitmap)
                     args.travelEntity.mapThumbnail = byteArray
                     travelRepository.updateTravel(args.travelEntity)
@@ -259,78 +282,6 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//        if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK && data != null) {
-//            val clipData = data.clipData
-//            val photosToInsert = mutableListOf<Photo>()
-//            if (clipData != null) {
-//                for (i in 0 until clipData.itemCount) {
-//                    val imageUri = clipData.getItemAt(i).uri
-//                    val photo = Photo(
-//                        travelEntryId = args.travelEntity.id,
-//                        uri = imageUri.toString(),
-//                        description = "",
-//                        dateTaken = System.currentTimeMillis()
-//                    )
-//                    photosToInsert.add(photo)
-//                }
-//            } else if (data.data != null) {
-//                val imageUri = data.data!!
-//                val photo = Photo(
-//                    travelEntryId = args.travelEntity.id,
-//                    uri = imageUri.toString(),
-//                    description = "",
-//                    dateTaken = System.currentTimeMillis()
-//                )
-//                photosToInsert.add(photo)
-//            }
-//            photoRepository.insertPhotos(photosToInsert)
-//            imageList.addAll(photosToInsert.map { it.uri })
-//            imagesAdapter.notifyDataSetChanged()
-//        } else if (requestCode == REQUEST_THUMBNAIL && resultCode == Activity.RESULT_OK && data != null) {
-//            data.data?.let { uri ->
-//                setThumbnail(uri)
-//            }
-//        }
-//    }
-
-//    private fun setThumbnail(imageUri: Uri) {
-//        lifecycleScope.launch {
-//            try {
-//                val bitmap = decodeUriToBitmap(imageUri)
-//                val byteArray = BitmapConverter().bitmapToByteArray(bitmap)
-//                args.travelEntity.mapThumbnail = byteArray
-//                travelRepository.updateTravel(args.travelEntity)
-//            } catch (e: Exception) {
-//                Log.e("setThumbnail", "Error processing image", e)
-//            }
-//        }
-//    }
-
-    private suspend fun decodeUriToBitmap(uri: Uri): Bitmap = withContext(Dispatchers.IO) {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                val source = ImageDecoder.createSource(requireActivity().contentResolver, uri)
-                ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
-                    decoder.setTargetSize(300, 300)
-                }
-            } else {
-                @Suppress("DEPRECATION")
-                MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, uri)
-            }
-        } catch (e: IOException) {
-            throw RuntimeException("Failed to decode Uri to Bitmap.", e)
-        }
-    }
-
-//    private fun loadPhotos() {
-//        lifecycleScope.launch {
-//            val photos = photoRepository.getAllPhotosForTravel(args.travelEntity.id)
-//            imageList.clear()
-//            imageList.addAll(photos.map { it.uri })
-//        }
-//    }
 
 
     override fun onStart() {
@@ -347,6 +298,7 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
 
     override fun onStop() {
         super.onStop()
+        toolbar.menu.clear()
         binding.ivMapThumbnail.onStop()
     }
 

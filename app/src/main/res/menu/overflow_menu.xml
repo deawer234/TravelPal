@@ -5,4 +5,14 @@
         android:title="Set thumbnail"
         android:icon="@drawable/ic_add_photo"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/change_title"
+        android:title="Change title"
+        android:icon="@drawable/ic_add_photo"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/change_desc"
+        android:title="Change description"
+        android:icon="@drawable/ic_add_photo"
+        app:showAsAction="never"/>
 </menu>

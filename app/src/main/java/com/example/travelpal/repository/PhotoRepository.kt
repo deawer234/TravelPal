@@ -16,4 +16,8 @@ class PhotoRepository (
     fun insertPhotos(photos: List<Photo>) {
         photos.forEach { photoDao.persistPhotoData(it) }
     }
+
+    fun deletePhoto(photo: Photo) {
+        photoDao.deletePhoto(photo)
+    }
 }
