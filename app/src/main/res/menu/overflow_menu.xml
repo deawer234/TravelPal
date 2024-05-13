@@ -2,17 +2,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_settings"
-        android:title="Set thumbnail"
+        android:title="@string/set_thumbnail"
         android:icon="@drawable/ic_add_photo"
         app:showAsAction="never"/>
     <item
         android:id="@+id/change_title"
-        android:title="Change title"
+        android:title="@string/change_title"
         android:icon="@drawable/ic_add_photo"
         app:showAsAction="never"/>
     <item
         android:id="@+id/change_desc"
-        android:title="Change description"
+        android:title="@string/change_description"
         android:icon="@drawable/ic_add_photo"
         app:showAsAction="never"/>
 </menu>

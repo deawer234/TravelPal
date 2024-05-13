@@ -19,18 +19,18 @@
         android:id="@+id/emptyTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="You don't have any entries yet :( \n\n Click on + and start tracking!"
+        android:text="@string/you_don_t_have_any_entries_yet_n_n_click_on_and_start_tracking"
         android:textSize="36sp"
         android:textAlignment="center"
         android:layout_marginTop="42dp"
-        android:drawableTop="@drawable/baseline_web_asset_off_24"
         android:drawablePadding="10dp"
-        android:drawableTint="@color/gray"
         android:textColor="@color/gray"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:drawableTopCompat="@drawable/baseline_web_asset_off_24"
+        app:drawableTint="@color/gray" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddTravelEntry"
