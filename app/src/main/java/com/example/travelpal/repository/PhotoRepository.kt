@@ -12,4 +12,8 @@ class PhotoRepository (
 
     fun getAllPhotosForTravel(travelEntityId: Long): List<Photo> =
         photoDao.selectPhotosForTravelEntry(travelEntityId)
+
+    fun insertPhotos(photos: List<Photo>) {
+        photos.forEach { photoDao.persistPhotoData(it) }
+    }
 }
