@@ -161,7 +161,7 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
 
         val averageSpeedText = "Average speed: %.2f km/h".format(average*3.6)
         val distanceTraveledText = "Distance traveled: %.2f km".format(locations.last().traveled/1000)
-        val totalTime = (locations.last().visitDate.toLong() - locations.first().visitDate.toLong())
+        val totalTime = (locations.last().visitDate.toLong() - locations.first().visitDate.toLong())/1000
         val steps = "Steps: ${locations.last().steps}"
         val hours = totalTime / 3600
         val minutes = (totalTime % 3600) / 60

@@ -63,6 +63,13 @@ class TravelLivetrackingFragment : Fragment() {
                 binding.elevation.text = "%.2f m".format(lastAltitude)
             }
 
+            trackerService?.timeRunInSeconds?.observe(viewLifecycleOwner) { timeInSeconds ->
+                val hours = timeInSeconds / 3600
+                val minutes = (timeInSeconds % 3600) / 60
+                val seconds = timeInSeconds % 60
+                binding.stopwatch.text = String.format("%02d:%02d:%02d", hours, minutes, seconds)
+            }
+
             trackerService?.locationsData?.observe(viewLifecycleOwner) { location ->
                 pathPoints.add(LatLng(location.latitude, location.longitude))
                 addLatestPolyline()
@@ -86,7 +93,7 @@ class TravelLivetrackingFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        binding.travelName.text = args.travelEntity.destinationName
         binding.stopTracking.setOnClickListener {
             Intent(requireActivity().applicationContext, TrackerService::class.java).apply {
                 action = TrackerService.ACTION_STOP
