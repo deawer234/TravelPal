@@ -1,6 +1,7 @@
 package com.example.travelpal.ui.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -25,12 +26,10 @@ class TravelAdapter(
             )
         )
 
-
     override fun onBindViewHolder(holder: TravelViewHolder, position: Int) {
         val item = getItem(position)
         holder.bind(item, onClick)
     }
-
 }
 
 
@@ -59,6 +58,8 @@ class TravelViewHolder(
         }
     }
 
+
+
 }
 
 class TravelDiffUtil : DiffUtil.ItemCallback<TravelEntity>() {
@@ -68,6 +69,4 @@ class TravelDiffUtil : DiffUtil.ItemCallback<TravelEntity>() {
 
     override fun areContentsTheSame(oldItem: TravelEntity, newItem: TravelEntity): Boolean =
         oldItem == newItem
-
-
 }

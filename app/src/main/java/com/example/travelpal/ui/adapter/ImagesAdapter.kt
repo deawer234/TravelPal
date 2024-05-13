@@ -38,10 +38,7 @@ class ImagesAdapter(private val onDelete: (Photo) -> Unit) : ListAdapter<Photo, 
 class ImageViewHolder(private val binding: ImageItemBinding, private val onDelete: (Photo) -> Unit) : RecyclerView.ViewHolder(binding.root) {
     fun bind(item: Photo) {
         binding.imageView.load(item.uri)
-
-        // Add a long click listener to the ImageView
         binding.imageView.setOnLongClickListener {
-            // Show a dialog with a delete button
             AlertDialog.Builder(it.context)
                 .setTitle("Delete Image")
                 .setMessage("Are you sure you want to delete this image?")
