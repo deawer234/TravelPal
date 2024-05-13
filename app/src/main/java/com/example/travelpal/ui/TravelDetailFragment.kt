@@ -160,13 +160,6 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         )
     }
 
-    private fun requestStoragePermission() {
-        requestPermissions(
-            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-            REQUEST_STORAGE_PERMISSION
-        )
-    }
-
     private fun openGalleryToSelectImages() {
         val intent = Intent(Intent.ACTION_PICK).apply {
             type = "image/*"
@@ -203,7 +196,7 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
                     val photo = Photo(
                         travelEntryId = args.travelEntity.id,
                         uri = imageUri.toString(),
-                        description = "",  // Update or leave blank based on your UI/design
+                        description = "",
                         dateTaken = System.currentTimeMillis()
                     )
                     photosToInsert.add(photo)
@@ -218,8 +211,6 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
                 )
                 photosToInsert.add(photo)
             }
-
-            // Insert photos into the database
             photoRepository.insertPhotos(photosToInsert)
             imageList.addAll(photosToInsert.map { it.uri })
             imagesAdapter.notifyDataSetChanged()
@@ -233,36 +224,6 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
             imageList.addAll(photos.map { it.uri })
             imagesAdapter.notifyDataSetChanged()
         }
-    }
-
-
-    private fun checkAndRequestStoragePermission() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            // Should we show an explanation?
-            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                // Explain to the user why we need to read the contacts
-                showExplanationDialog()
-            } else {
-                // No explanation needed, we can request the permission.
-                requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_STORAGE_PERMISSION)
-            }
-        } else {
-            openGalleryToSelectImages()
-        }
-    }
-
-    private fun showExplanationDialog() {
-        AlertDialog.Builder(context)
-            .setTitle("Storage Permission Needed")
-            .setMessage("This app needs the Storage permission to select images from your gallery.")
-            .setPositiveButton("OK") { dialog, which ->
-                requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_STORAGE_PERMISSION)
-            }
-            .setNegativeButton("Cancel") { dialog, which ->
-                dialog.dismiss()
-            }
-            .create()
-            .show()
     }
 
 
