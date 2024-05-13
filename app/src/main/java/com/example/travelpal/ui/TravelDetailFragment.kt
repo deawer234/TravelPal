@@ -1,5 +1,6 @@
 package com.example.travelpal.ui
 
+import android.Manifest
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -23,12 +24,13 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.coroutines.launch
-import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.example.travelpal.data.Photo
 import com.example.travelpal.ui.adapter.ImagesAdapter
@@ -64,6 +66,38 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
 
     }
 
+    val requestPermissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            when {
+                results[Manifest.permission.READ_MEDIA_IMAGES] == true && results[Manifest.permission.READ_MEDIA_VIDEO] == true && results[Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED] == true -> {
+                    openGalleryToSelectImages()
+                }
+                else -> {
+                    Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                results[Manifest.permission.READ_MEDIA_IMAGES] == true && results[Manifest.permission.READ_MEDIA_VIDEO] == true -> {
+                    openGalleryToSelectImages()
+                }
+                else -> {
+                    Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else {
+            when {
+                results[Manifest.permission.READ_EXTERNAL_STORAGE] == true -> {
+                    openGalleryToSelectImages()
+                }
+                else -> {
+                    Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         locations = locationRepository.getAllTravelLocations(args.travelEntity.id)
@@ -81,7 +115,13 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
         }
 
         binding.addImg.setOnClickListener {
-            openGalleryToSelectImages()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                requestPermissions.launch(arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED))
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requestPermissions.launch(arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO))
+            } else {
+                requestPermissions.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
+            }
         }
 
 
@@ -169,20 +209,10 @@ class TravelDetailFragment : Fragment(), OnMapReadyCallback {
     }
 
     companion object {
-        private const val REQUEST_STORAGE_PERMISSION = 101
         private const val REQUEST_PICK_IMAGE = 102
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_STORAGE_PERMISSION) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openGalleryToSelectImages()
-            } else {
-                Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
+
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
